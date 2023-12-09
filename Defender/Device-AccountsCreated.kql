@@ -1,0 +1,21 @@
+// Returns all accounts created - both locally and domain
+// Accounts created by the device itself, will begin with "(Local System) - " followed by the account/object name
+
+DeviceEvents
+| where Timestamp > (1d)
+| join kind=inner DeviceInfo on DeviceName
+| where ActionType == "UserAccountCreated"
+| where AccountName !contains "defaultuser1"
+| extend TrimmedDeviceName = split(DeviceName, ".")[0]
+| extend TrimmedAccountCreatedBy = split(InitiatingProcessAccountName, "$")[0]
+| extend AccountCreatedByCustom = iif(TrimmedAccountCreatedBy contains TrimmedDeviceName,
+                                    strcat("(Local System) - ", InitiatingProcessAccountName),
+                                    InitiatingProcessAccountName)
+| summarize arg_max(Timestamp, *) by AccountName
+| project Timestamp,
+    ['Device Name'] = TrimmedDeviceName,
+    ['Account Domain'] = AccountDomain,
+    ['Action Performed'] = ActionType,
+    ['Account Created'] = AccountName
+    ['Account Created By'] = AccountCreatedByCustom
+| sort by Timestamp desc
