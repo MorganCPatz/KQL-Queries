@@ -1,0 +1,16 @@
+// Returns a list of basic actions performed on an account or by a specific administrator
+// Intended to be used as initial check for changes to account(s)
+
+let Actions = dynamic(['Account deleted', "Account disabled", "Account Password Changed"]);
+IdentityDirectoryEvents 
+| where TargetAccountUpn contains "<UserUPN>"
+| where AccountUpn contains "<AdminUPN>"
+| where Timestamp > ago (<Timeframe>)
+| where ActionType has_any (Actions)
+| where AdditionalFields contains "ACTOR.ACCOUNT" and AdditionalFields contains "Target_object.USER"
+| project Timestamp,
+          ActionType,
+          ['Account Modified'] = TargetAccountDisplayName,
+          ['User Account UPN'] = TargetAccountUpn,
+          ['Account Changed By'] = AccountDisplayName,
+          ['Account Changed by UPN'] = AccountUpn
