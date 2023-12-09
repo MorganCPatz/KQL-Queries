@@ -1,0 +1,20 @@
+// Returns a sumary of interactive sign-in activity locations for a user over x period of time 
+// Useful to potential determine outlier signin activity for a user based on logoncount 
+
+AADSignInEventsBeta
+| where AccountUPN == "<userUPN>"
+| where Timestamp > ago (<Timeframe>)
+| where LogonType == '["interactiveUser"]'
+| where Applications !contains <ApplicationName>
+| where isnotempty(IPAddress)
+| extend DeviceName = iif(isnotempty(DeviceName),
+                    DeviceName,
+                    "Uknown Device - device is not managed")
+| summarize LogonCount=count() by IPAddress, City, State, Country, DeviceName, OSPlatform
+| project ['Device Name'] = DeviceName, 
+          ['Operating System'] = OSPlatform,
+          IPAddress, 
+          LogonCount, 
+          City, 
+          Country
+| sort by LogonCount desc
