@@ -1,0 +1,21 @@
+// Returns list of accounts created over x period of time
+// Useful to determine details such as the device the account was created on
+
+DeviceEvents
+| where Timestamp > (1d)
+| join kind=inner DeviceInfo on DeviceName
+| where ActionType == "UserAccountCreated"
+| where AccountName !contains "defaultuser1"
+| extend TrimmedDeviceName = split(DeviceName, ".")[0]
+| extend TrimmedAccountCreatedBy = split(InitiatingProcessAccountName, "$")[0]
+| extend AccountCreatedByCustom = iif(TrimmedAccountCreatedBy contains TrimmedDeviceName,
+                                    strcat("(Local System) - ", InitiatingProcessAccountName),
+                                    InitiatingProcessAccountName)
+| summarize arg_max(Timestamp, *) by AccountName
+| project Timestamp,
+    ['Device Name'] = TrimmedDeviceName,
+    ['Account Domain'] = AccountDomain,
+    ['Action Performed'] = ActionType,
+    ['Account Created'] = AccountName
+    ['Account Created By'] = AccountCreatedByCustom
+| sort by Timestamp desc
