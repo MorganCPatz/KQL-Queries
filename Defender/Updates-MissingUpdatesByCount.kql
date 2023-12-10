@@ -1,0 +1,14 @@
+// Returns a list of total number of devices missing updates for a specific month
+// OperatingSystem can either be specified as "Server" or "Windows"
+// For UpdateMonthYear the Month, year, and Type must be specified.  Example: "December 2023 Security"
+
+DeviceTvmSoftwareVulnerabilities
+| join kind=inner DeviceInfo on DeviceName
+| where SensorHealthState contains 'Active'
+| where OSPlatform contains "<OperatingSystem>"
+| where RecommendedSecurityUpdate contains "<UpdateMonthYear"
+| join kind=inner DeviceTvmSoftwareVulnerabilitiesKB on CveId
+| summarize dcount(DeviceName), make_set(DeviceName) by RecommendedSecurityUpdate,
+        RecommendedSecurityUpdateId, PublishedDate  
+| project RecommendedSecurityUpdate, RecommendedSecurityUpdateId, DeviceCount=dcount_DeviceName, PublishedDate                
+| sort by DeviceCount desc
