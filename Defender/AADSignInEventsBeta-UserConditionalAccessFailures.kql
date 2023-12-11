@@ -1,0 +1,23 @@
+// Returns list of Conditional Access failure results for a user
+// Summarizes latest results by requestID to return only CA failures
+// Reduces potential for returning results where a failure is followed by success signin within same request  
+
+AADSignInEventsBeta
+| where Timestamp > ago (7d)
+| where AccountUpn contains "<AccountUPN>"
+| where LogonType == '["interactiveUser"]'
+| where ConditionalAccessPolicies has_any("failure", "success")
+| mv-expand CAPsettings = parse_json(ConditionalAccessPolicies)
+| extend CAPdisplayName = tostring(CAPsettings["displayName"])
+| summarize arg_max (Timestamp, *) by RequestId, CAPdisplayName
+| where CAPsettings["result"] == "failure"
+| project Timestamp,
+        DeviceName,
+        IPAddress,
+        ["Account Displayname"] = AccountDisplayName,
+        ["User Account UPN"] = AccountUpn,
+        ["Logon Request ID"] = RequestId,
+        ["Application Name"] = Application,
+        ["CA Policy Name"] = CAPdisplayName,
+        ["CA Policy Result"] = CAPsettings["result"]
+| sort by Timestamp desc
