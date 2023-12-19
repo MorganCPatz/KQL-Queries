@@ -1,0 +1,24 @@
+// Returns list of group membership changes - including removal and addition
+// Information includes the group, accounts added or removed, and who initiated the change
+
+IdentityDirectoryEvents
+| where Timestamp > ago (7d)
+| where TargetAccountUpn contains ""
+| where ActionType == "Group Membership changed"
+| where isnotempty(TargetAccountUpn)
+| where isnotempty(AccountUpn)
+| extend AddtlFields = parse_json(AdditionalFields)
+| extend FromGroup = AddtlFields.["FROM.GROUP"]
+| extend ToGroup = AddtlFields.["TO.GROUP"]
+| extend ['Group Modified'] = iif( isnotnull(ToGroup),
+                               ToGroup,
+                               FromGroup)
+| extend ['Action Performed'] = iif( isnotnull(ToGroup),
+                            "ADDED to group",
+                            "REMOVED from group")
+| project Timestamp,
+    ['Account Modified'] = TargetAccountUpn,
+    ['Account Displayname'] = TargetAccountDisplayName,
+    ['Changed Initiated By'] = AccountName,
+    ['Group Modified'],
+    ['Action Performed']
