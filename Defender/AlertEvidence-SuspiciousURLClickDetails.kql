@@ -1,0 +1,18 @@
+// Returns list details regarding Suspicious URL clicks by users
+// Combines details from all three entity types to return consolidated data 
+
+AlertEvidence
+    | where Timestamp > ago (7d)
+    | where Title == "Suspicious URL clicked"
+    | where EntityType == "Machine"
+    | project Timestamp, AlertId, DeviceName
+| join (AlertEvidence
+    | where EntityType == "User"
+    | project  AlertId, AccountDomain, AccountName
+    ) on AlertId
+| join (AlertEvidence
+    | where EntityType == "Url"
+    | project AlertId, RemoteUrl
+    ) on AlertId
+| project Timestamp, AlertId, DeviceName, AccountDomain, AccountName, RemoteUrl
+| sort by Timestamp desc
