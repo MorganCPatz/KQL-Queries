@@ -1,0 +1,22 @@
+// Queries against URL and AITM Alerts to obtain timestamp of first event
+// Returns list of user signs from first event to present
+
+let UserName = "<USER>";
+let AlertEvivenceDetails = (AlertEvidence
+    | where AccountName contains UserName
+    | where Title has_any ("A potentially malicious URL click was detected",
+                           "Suspicious URL clicked",
+                           "Suspicious URL opened in web browser")
+    or Title contains "adversary-in-the-middle"
+    | where isnotempty(AccountName)
+    | summarize arg_min(Timestamp, * ) by AccountName
+    | project ['Alert Timestamp'] = Timestamp, AccountObjectId);
+AlertEvivenceDetails
+    | join AADSignInEventsBeta on AccountObjectId
+    | where LogonType == '["interactiveUser"]'
+    | where Timestamp > ['Alert Timestamp']
+    | project ['Alert Timestamp'],
+              ['Logon Timestamp'] = Timestamp,
+              AccountUpn, DeviceName, OSPlatform, Application,
+              IPAddress, City, State, Country
+    | sort by ['Logon Timestamp'] desc
