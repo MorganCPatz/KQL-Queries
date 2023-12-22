@@ -1,0 +1,20 @@
+// Returns list of accounts that generated a URL click or AITM alert
+// Displays information regarding Timestamp of First Event and Last Event
+ 
+let AlertEvivenceDetails = (
+    AlertEvidence
+    | where Title has_any ("A potentially malicious URL click was detected",
+                           "Suspicious URL clicked",
+                           "Suspicious URL opened in web browser")
+                           or Title contains "adversary-in-the-middle"
+    | where isnotempty(AccountName)
+    | project Timestamp, Title, AccountName);
+let FirstEventResults = AlertEvivenceDetails
+| summarize arg_min(Timestamp, *) by AccountName
+| project FirstEvent = Timestamp, AccountName, FirstEventTitle = Title;
+AlertEvivenceDetails
+| summarize arg_max(Timestamp, *) by AccountName
+| extend LastEvent = Timestamp
+| extend LastEventTitle = Title
+| join FirstEventResults on AccountName
+| project AccountName, FirstEvent, FirstEventTitle, LastEvent, LastEventTitle
