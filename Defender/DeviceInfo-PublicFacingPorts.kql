@@ -1,6 +1,6 @@
 // Internet Facing Detections - can be searched by specifying port or IP Address 
 // Specifying an IP Address only will return discovered port(s) 
-// Specifying Port only will return all discovered devices with that port open
+// Specifying Port only will return devices discovered with that port open 
 
 let IPAddress = "<IP Address>";
 let Port = "<Port>";    
