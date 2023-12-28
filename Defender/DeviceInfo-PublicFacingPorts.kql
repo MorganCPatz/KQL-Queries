@@ -1,0 +1,23 @@
+// Internet Facing Detections - can be searched by specifying port or IP Address 
+// Specifying an IP Address only will return discovered port(s) 
+// Specifying Port only will return all discovered devices with that port open
+
+let IPAddress = "<IP Address>";
+let Port = "<Port>";    
+DeviceInfo
+| where Timestamp > ago (7d)
+| where IsInternetFacing
+| extend InternetFacingDetails = parse_json(AdditionalFields)
+| extend Discovery = tostring(InternetFacingDetails["InternetFacingReason"]),
+    InternetFacingLocalIP = tostring(InternetFacingDetails["InterFacingLocalIP"]),
+    InternetFacingLocalPort = tostring(InternetFacingDetails["InternetFacingLocalPort"]),
+    InternetFacingPublicPort = tostring(InternetFacingDetails["InternetFacingPublicScannedPort"]),
+    InternetFacingProtocol = tostring(InternetFacingDetails["InternetFacingTransportProtocol"]),
+    InternetFacingLastSeen = todatetime(InternetFacingDetails["InternetFacingLastSeen"])
+| where (InternetFacingLocalIP == IPAddress or PublicIP == IPAddress)
+| where (InternetFacingLocalPort == Port or InternetFacingPublicPort == Port)
+| summarize arg_max(Timestamp, *) by DeviceId, InternetFacingLocalPort
+| project InternetFacingLastSeen, DeviceName, ExposureLevel, 
+          Discovery, PublicIP, InternetFacingLocalIP, InternetFacingLocalPort, 
+          InternetFacingPublicPort, InternetFacingProtocol
+| sort by InternetFacingLastSeen desc
