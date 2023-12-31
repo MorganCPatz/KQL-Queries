@@ -1,0 +1,19 @@
+// Searches for local user accounts created and returns values containing details of cmd run
+// Initial output is parsed to eliminate potential double whitespaces
+
+let Netcommand = "net user";
+DeviceProcessEvents
+| where (InitiatingProcessCommandLine contains Netcommand or ProcessCommandLine contains Netcommand)
+    and (InitiatingProcessCommandLine contains "/add" or ProcessCommandLine contains "/add")
+| extend CommandLine = iif(InitiatingProcessCommandLine contains Netcommand,
+                            InitiatingProcessCommandLine,
+                            ProcessCommandLine)            
+//| where InitiatingProcessAccountName == "system"
+| summarize arg_max (Timestamp, *) by DeviceName, CommandLine
+| extend CmdParsed = replace_regex(CommandLine,@"\s+",@" ")
+| extend CmdParsed = split(CmdParsed," ")
+| extend UserAccount=CmdParsed[4],
+         Password=CmdParsed[5],
+         ['Created By'] = strcat(AccountDomain,"\\", AccountName)
+| project Timestamp, DeviceName, ['Created By'], CommandLine, UserAccount, Password
+| sort by Timestamp desc
