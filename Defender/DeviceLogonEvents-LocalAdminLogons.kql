@@ -1,0 +1,12 @@
+// Used to find logons for accounts that are local administrator(s) on devices
+// Can be filtered to display specific LogonTypes and or results for local or domain accounts
+
+let Logons = dynamic(["Batch", "Interactive", "Network", "Service"]);
+DeviceLogonEvents
+| where LogonType has_any (Logons)
+| where IsLocalAdmin == True
+| extend TrimmedDeviceName = split(DeviceName, ".")[0]
+| extend ['Account Type'] = iif(TrimmedDeviceName == AccountDomain,
+                            strcat("Local Account"),
+                            strcat("Domain Account"))
+| project Timestamp, DeviceName, ['Account Type'], AccountName, LogonType, ActionType
