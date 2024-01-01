@@ -1,0 +1,27 @@
+// Searches for password change for user account and captures timestamp of activity
+// Returns sign-in activity for both pre and post password reset change
+
+let LookbackHours = toint("24");
+let UserAccount = "<User>";
+let PasswordChangeTimestamp = (
+IdentityDirectoryEvents
+    | where ActionType == "Account Password changed"
+    | where TargetAccountDisplayName contains UserAccount or TargetAccountUpn contains UserAccount
+    | extend LoginsToSearch = datetime_add('hour', -LookbackHours, Timestamp)
+    | project ResetTimestamp = Timestamp, LoginsToSearch , ActionType, TargetAccountUpn, TargetAccountDisplayName);
+PasswordChangeTimestamp
+| join AADSignInEventsBeta on $left.TargetAccountUpn == $right.AccountUpn
+| where LogonType == '["interactiveUser"]'
+| where Timestamp > LoginsToSearch
+| project ['Logons Before/After Reset'] = Timestamp,
+          ['Password Reset Time'] = ResetTimestamp,
+          AccountDisplayName,
+          AccountUpn,
+          DeviceName,
+          OSPlatform,
+          Application,
+          IPAddress,
+          City,
+          State,
+          Country
+| sort by ['Logons Before/After Reset'] desc
