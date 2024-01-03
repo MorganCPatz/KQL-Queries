@@ -2,7 +2,7 @@
 // Useful to determine details such as the device the account was created on
 
 DeviceEvents
-| where Timestamp > (1d)
+| where Timestamp > ago (1d)
 | join kind=inner DeviceInfo on DeviceName
 | where ActionType == "UserAccountCreated"
 | where AccountName !contains "defaultuser1"
@@ -16,6 +16,6 @@ DeviceEvents
     ['Device Name'] = TrimmedDeviceName,
     ['Account Domain'] = AccountDomain,
     ['Action Performed'] = ActionType,
-    ['Account Created'] = AccountName
+    ['Account Created'] = AccountName,
     ['Account Created By'] = AccountCreatedByCustom
 | sort by Timestamp desc
