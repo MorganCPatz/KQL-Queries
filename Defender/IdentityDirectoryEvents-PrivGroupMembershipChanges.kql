@@ -1,0 +1,28 @@
+// Searches for Group MemberShip Changes for idendtified groups
+// Updated to display results when users OR groups are added/removed
+
+let PrivGroups = dynamic(['Enterprise Admins','Domain Admin','Administrators',,'Schema Admins','Account Operators','Backup Operators', 'Group Policy Creator Owners']);
+IdentityDirectoryEvents
+| where ActionType == "Group Membership changed"
+| where AdditionalFields has_any (PrivGroups)
+| where isnotempty(AccountSid)
+| extend ObjectType = iff(isnotempty(tostring(AdditionalFields['TARGET_OBJECT.USER'])),
+                        "User Account",
+                        "Security Group")
+| extend ActivityType = iff(isnotempty(tostring(AdditionalFields['TO.GROUP'])),
+                            strcat("Added ", ObjectType),
+                            strcat("Removed ", ObjectType))
+| extend TargetObject = iif(isnotempty(tostring(AdditionalFields['TARGET_OBJECT.USER'])),
+                            tostring(AdditionalFields['TARGET_OBJECT.USER']),
+                            tostring(AdditionalFields['TARGET_OBJECT.GROUP']))
+| extend ModifiedGroup = iif(isnotempty(tostring(AdditionalFields['TO.GROUP'])),
+                            tostring((AdditionalFields['TO.GROUP'])),
+                            tostring((AdditionalFields['FROM.GROUP'])))
+| project
+    Timestamp,
+    ActivityType,
+    TargetObject,  
+    TargetAccountUpn,
+    ChangedBy = AccountName,
+    ModifiedGroup
+| sort by Timestamp desc
