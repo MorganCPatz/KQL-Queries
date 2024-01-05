@@ -1,0 +1,13 @@
+// Searches for changes to Exchange Transport Rules - parsing required to obtain name for New-TransportRule only
+// Simple results returned for quick referece as name value pairs vary by actiontype and settings configured
+
+let TransportRules = dynamic(["New-TransportRule", "Set-TransportRule", "Disable-TransportRule", "Enable-TransportRule", "Remove-TransportRule"]);
+CloudAppEvents
+| where ActionType has_any (TransportRules)
+| extend ['Transport RuleName'] =  case(ActionType == "New-TransportRule", tostring(parse_json(tostring(RawEventData.Parameters))[0].Value),RawEventData.ObjectId)
+| project Timestamp, 
+          ActionType, 
+          Application,
+          ['Changed By'] = AccountDisplayName,
+          ['Account UPN'] = RawEventData.UserId,
+          ['Transport RuleName']  
