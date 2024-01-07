@@ -1,0 +1,14 @@
+// Useful to search for login failures for admin or privileged accounts based on upn
+// ErrorCode lookup maybe necessary if FailureReason is listed as "General Failure"
+
+IdentityLogonEvents
+    | where Application != "Active Directory"
+    | where ActionType == "LogonFailed"
+    | where AccountUpn contains "<Account Naming Convention>"
+    | extend IdentityLogonRequestId = tostring(AdditionalFields["Request ID"])
+    | project Timestamp,IdentityLogonRequestId, AccountUpn, FailureReason
+| join (AADSignInEventsBeta
+    | where LogonType == '["interactiveUser"]'
+    | project Timestamp, AccountDisplayName, DeviceName, IPAddress, RequestId, ErrorCode
+) on $left.IdentityLogonRequestId == $right.RequestId
+| project Timestamp, AccountDisplayName, AccountUpn, DeviceName, IPAddress, ErrorCode, FailureReason
