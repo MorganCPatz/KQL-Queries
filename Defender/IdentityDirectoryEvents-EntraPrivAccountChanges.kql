@@ -1,0 +1,16 @@
+// Searches for changes to accounts that members of Privileged Azure AD Roles
+// If using PIM, assigned roles are only present in IdentityInfo when a role has been activated 
+// Set appropriate query period to accomdoate 
+
+let EntraIDRoles = dynamic(["Global Administrator", "Company Administrator", "Privileged Authentication Administrator",
+                             "Privileged Role Administrator", "Security Administrator"]);
+let AccountActions = dynamic(["Account Deleted", "Account expired", "Account Password", "Account Password expired", "Account Disabled", "Account enabled"]);
+let Accounts = IdentityInfo
+    | where AssignedRoles has_any(EntraIDRoles)
+    | project AccountUpn, ChangeSource, AssignedRoles;
+Accounts
+    | join IdentityDirectoryEvents on $left.AccountUpn == $right.TargetAccountUpn
+    | where isnotempty(TargetAccountUpn)
+    | where ActionType has_any (AccountActions)
+    | summarize arg_max(Timestamp, *) by TargetAccountUpn, ActionType
+| project Timestamp, ActionType, TargetAccountUpn, TargetAccountDisplayName, ChangedBy=AccountUpn1, ChangeSource, AssignedRoles
