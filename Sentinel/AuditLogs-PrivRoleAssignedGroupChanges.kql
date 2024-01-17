@@ -1,3 +1,5 @@
+// Check for group membership changes on PIM Role Assigned groups
+// Obtains list of groups by checking for select PIM role activations
 
 let PIMRoles = dynamic(["Global Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator",
                         "Security Administrator", "Conditional Access Administrator", "Authentication Administrator"]);
