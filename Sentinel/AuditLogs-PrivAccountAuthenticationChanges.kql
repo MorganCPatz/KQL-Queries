@@ -1,25 +1,21 @@
 // Check for Authentication Methods changed events for Privileged Accounts 
 // Generates list of priivleged accounts by checking for select PIM role activations
 
-let PIMRoles = dynamic(["Global Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator",
-                        "Security Administrator", "Conditional Access Administrator", "Authentication Administrator"]);
-let AzureAssignedGroups = AuditLogs
-| where TimeGenerated > ago (7d)
-| where OperationName == "Add member to role completed (PIM activation)"
-| where parse_json(tostring(TargetResources[0].displayName)) has_any (PIMRoles)
-| where isnotempty(TargetResources[6])
-| extend PimGroup = iif(isnotempty(TargetResources[6].displayName),
-                        TargetResources[6].displayName,
-                        TargetResources[7].displayName)
-| distinct tostring(PimGroup);
-AzureAssignedGroups
-    | join kind=inner (AuditLogs
-    | where TimeGenerated > ago (30d) 
-    | where OperationName == "Add member to group" or OperationName == "Remove member from group"
-    | extend AzureRoleEnabledGroup = iff(isnotnull(TargetResources[0].modifiedProperties[1].newValue),
-                                        parse_json(tostring(TargetResources[0].modifiedProperties[1].newValue)),
-                                        parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)))
-    | extend AzureRoleEnabledGroup = tostring(AzureRoleEnabledGroup)
-    | extend ChangedBy = (InitiatedBy.user).userPrincipalName
-    ) on $left.PimGroup == $right.AzureRoleEnabledGroup
-| project TimeGenerated, AzureRoleEnabledGroup, OperationName, ChangedBy
+let PIMRoles = dynamic(["Global Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator", "Security Administrator"]);
+let AccountActions = dynamic(["Admin deleted security info", "Admin registered security info", "Reset password (by Admin)", 
+                              "Reset password (self-service)", "User registered security info", "User deleted security info"]);
+let AdminAccountActions = AuditLogs
+    | where TimeGenerated > ago (7d)
+    | where OperationName == "Add member to role completed (PIM activation)"
+    | where parse_json(tostring(TargetResources[0].displayName)) has_any (PIMRoles)
+    | extend AdminAccount = parse_json(tostring((InitiatedBy.user).userPrincipalName))
+    | distinct tostring(AdminAccount);
+AdminAccountActions
+| join (AuditLogs
+    | where TimeGenerated > ago (30d)
+    | where OperationName has_any (AccountActions)
+    | extend AdminAccount = tostring(parse_json(tostring(TargetResources[0].userPrincipalName)))
+    | extend ['Changed By'] = (InitiatedBy.user).userPrincipalName
+    | extend TimeGenerated = datetime_utc_to_local(TimeGenerated, 'US/Eastern')
+) on AdminAccount
+| project TimeGenerated, AdminAccount, ['Changed By'], OperationName, LoggedByService, Result, ResultReason
