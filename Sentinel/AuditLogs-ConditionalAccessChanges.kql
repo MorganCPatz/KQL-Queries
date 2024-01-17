@@ -1,0 +1,13 @@
+// Searches for changes to Conditional Access Policies and Named Locations
+// Appends label to indicate type of object changed followed by name for quick identification
+
+AuditLogs
+| where TimeGenerated > ago (30d)
+| where LoggedByService == "Conditional Access"
+| extend ChangeBy = iif(isnotnull((InitiatedBy.user).userPrincipalName),
+                        tostring((InitiatedBy.user).userPrincipalName),
+                        tostring((InitiatedBy.app).displayName))
+| extend ObjectChanged = iff(ActivityDisplayName contains "conditional",
+                         strcat("Conditional Access Policy - ", tostring(TargetResources[0].displayName)),
+                         strcat("Named Location - ", tostring(TargetResources[0].displayName)))
+| project TimeGenerated, OperationName, ChangeBy, ObjectChanged
