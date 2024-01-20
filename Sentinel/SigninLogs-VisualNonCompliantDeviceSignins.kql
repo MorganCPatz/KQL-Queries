@@ -1,0 +1,18 @@
+// Summarizes count of successful signins for non-compliant devices over X period of time 
+// Useful to track number of unique (non compliant) deviceIDs per day
+
+SigninLogs
+| where TimeGenerated > ago (90d)
+| where IsInteractive
+| where ResultType == "0"
+| where DeviceDetail.isCompliant != true
+| where isnotempty(DeviceDetail.deviceId)
+| where DeviceDetail.operatingSystem contains "Windows"
+| extend DeviceID = tostring(DeviceDetail.deviceId)
+| summarize arg_max(TimeGenerated, *) by DeviceID, bin(TimeGenerated, 1d)
+| summarize NonCompliantDeviceLogins = countif(isnotempty(DeviceID)) by startofday(TimeGenerated)
+| render timechart 
+  with  ( 
+    ytitle="Count",
+    xtitle="Day",
+    title="Noncompliant Logins over time")
