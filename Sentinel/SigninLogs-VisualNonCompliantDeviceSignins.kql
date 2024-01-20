@@ -11,8 +11,8 @@ SigninLogs
 | extend DeviceID = tostring(DeviceDetail.deviceId)
 | summarize arg_max(TimeGenerated, *) by DeviceID, bin(TimeGenerated, 1d)
 | summarize NonCompliantDeviceLogins = countif(isnotempty(DeviceID)) by startofday(TimeGenerated)
-| render timechart 
-  with  ( 
+| render timechart with  
+  ( 
     ytitle="Count",
     xtitle="Day",
     title="Noncompliant Logins over time")
