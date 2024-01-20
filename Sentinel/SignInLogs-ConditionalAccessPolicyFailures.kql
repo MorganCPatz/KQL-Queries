@@ -1,0 +1,12 @@
+// Summarizes Conditional Access Policy failures over time 
+// Can be used to search for failures of specific policies 
+
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType != "0"
+| mv-expand ConditionalAccessPolicies 
+| where ConditionalAccessPolicies.result == "failure"
+| where ConditionalAccessPolicies.displayName startswith ""
+| extend ['Conditional Access Policy'] = tostring((ConditionalAccessPolicies).displayName)
+| summarize ['Failure Count'] = count() by ['Conditional Access Policy'], ResultType, ResultDescription
+| sort by ['Conditional Access Policy'] asc
