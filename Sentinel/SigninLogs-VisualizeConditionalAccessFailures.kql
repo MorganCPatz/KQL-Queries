@@ -1,0 +1,17 @@
+// Summarizes results of Conditional Access Policies failures over time
+// Targets CA Poicies failures where StrongAuthentication or Device Compliant is required
+// https://learn.microsoft.com/en-us/entra/identity-platform/reference-error-codes
+
+Failures over time for CA policies requiring Strong Authentication Methds or DeviceCompliance
+SigninLogs
+| where TimeGenerated > ago (30d)
+//| where ResultType has_any ("50074", "53000")
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies.result == "failure"
+| extend ['Conditional Access Policy'] = tostring(ConditionalAccessPolicies.displayName)
+| summarize FailureCount = count() by ['Conditional Access Policy'], bin(TimeGenerated, 1d)
+| render timechart with  
+    (  
+    ytitle="Count",
+    xtitle="Day",
+    title="Failures by CA Policy over Time")
