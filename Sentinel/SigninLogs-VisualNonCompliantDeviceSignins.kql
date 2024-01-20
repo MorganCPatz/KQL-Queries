@@ -13,6 +13,6 @@ SigninLogs
 | summarize NonCompliantDeviceLogins = countif(isnotempty(DeviceID)) by startofday(TimeGenerated)
 | render timechart with  
   ( 
-    ytitle="Count",
-    xtitle="Day",
-    title="Noncompliant Logins over time")
+  ytitle="Count",
+  xtitle="Day",
+  title="Noncompliant Logins over time")
