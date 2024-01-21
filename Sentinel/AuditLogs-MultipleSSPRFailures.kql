@@ -1,0 +1,10 @@
+// Detects when a user has 5 or more SSPR failures within an hour
+// Useful to determine abnormal SSPR behavior
+ 
+AuditLogs
+| where TimeGenerated > ago (7d)
+| where OperationName == "Reset password (self-service)"
+| where Result == "failure"
+| extend UserPrincipalName = tostring((InitiatedBy.user).userPrincipalName)
+| summarize ['User SSPR Failures']=count() by UserPrincipalName, bin(TimeGenerated, 1h)
+| where ['User SSPR Failures'] >= 5
