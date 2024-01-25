@@ -1,0 +1,10 @@
+// Query to determine users who had multiple CA failures in X timeframe
+// Displays results when a user has 5 or more failures within an hour
+
+SigninLogs
+| where TimeGenerated > ago (14d)
+| where ResultType != "0"
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies.result == "failure"
+| summarize FailuresInAnHour = count() by UserPrincipalName, bin(TimeGenerated, 1h)
+| where FailuresInAnHour >=5
