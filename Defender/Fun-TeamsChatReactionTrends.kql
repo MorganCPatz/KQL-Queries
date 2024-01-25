@@ -10,7 +10,8 @@ CloudAppEvents
 | render timechart
 
 
-=============================================================================================================
+// =============================================================================================================
+
 // Fun query to compare two chat groups and their reactions per day
 // Displays results to see reaction trends over time
 
