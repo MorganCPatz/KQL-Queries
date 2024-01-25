@@ -1,0 +1,25 @@
+// Fun query to track the types of reactions in a given Teams Chat
+// Threshold is set to 5 to eliminate one-off reactions
+
+CloudAppEvents
+| where Timestamp > ago (30d)
+| where ActionType = "ReactedToMessage"
+| where RawEventData.ChatName == "<Chat>" 
+| summarize Count = count() by Reaction = tostring(RawEventData.MessageReactionType), bin(Timestamp, 1d)
+| where Count >= 5
+| render timechart
+
+
+=============================================================================================================
+// Fun query to compare two chat groups and their reactions per day
+// Displays results to see reaction trends over time
+
+CloudAppEvents
+| where Timestamp > ago (30d)
+| where ActionType == "ReactedToMessage"
+| where RawEventData.ChatName == "<Chat 1>" or RawEventData.ChatName == "<Chat 2>"
+| summarize 
+	['Chat 1 Name'] = countif(RawEventData.ChatName == "<Chat 1>"
+	['Chat 2 Name'] = countif(RawEventData.ChatName == "<Chat 2>"
+	by bin (Timestamp, 1d)
+| render timechart
