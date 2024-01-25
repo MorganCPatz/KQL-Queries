@@ -1,0 +1,12 @@
+// Query to track changes administrators changing account security info
+// Excludes changes made by SSPR / MFA Registration process
+
+let AdminActions = dynamic(["Admin deleted security info", "Admin registered security info", "Admin update security info", "Reset password (by admin)", "Reset user password"]);
+AuditLogs
+| where TimeGenerated > ago (14d)
+| where OperationName has_any (AdminActions)
+| where ResultDescription !contains "failed"
+| where (InitiatedBy.user).userPrincipalName <> "fim_password_service@support.onmicrosoft.com"
+| extend TargetAccount = TargetResources[0].userPrincipalName
+| extend ChangedBy = (InitiatedBy.user).userPrincipalName
+| project TimeGenerated, TargetAccount, ChangedBy, OperationName, ResultDescription
