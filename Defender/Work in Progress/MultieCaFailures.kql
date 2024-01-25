@@ -1,0 +1,10 @@
+// User Failed Multiple Conditional Access Policies within an hour
+
+
+SigninLogs
+| where TimeGenerated > ago (14d)
+| where ResultType != "0"
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies.result == "failure"
+| summarize FailuresInAnHour = count() by UserPrincipalName, bin(TimeGenerated, 1h)
+| where FailuresInAnHour >=5
