@@ -1,0 +1,13 @@
+// Query to determine Azure Roles assigned outside of PIM
+// Displays results for both user and group assignments
+
+AuditLogs
+| where TimeGenerated > ago (7d)
+| where OperationName == "Add member to role outside of PIM (permanent)"
+| extend Actor = (InitiatedBy.user).userPrincipalName
+| extend RoleAssigned = TargetResources[0].displayName
+| extend AssignedTo = iif((TargetResources[2].type == "Group"),
+                       TargetResources[2].displayName,
+                       TargetResources[2].userPrincipalName)
+| extend ObjectType = TargetResources[2].type 
+| project TimeGenerated, OperationName, RoleAssigned, AssignedTo, ObjectType, Actor
