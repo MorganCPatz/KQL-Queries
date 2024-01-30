@@ -1,0 +1,31 @@
+// Query to detect when a BitLocker key has been read and return DeviceName by querying SiginLogs
+// Attempts to return all keys accessed, missing signin activity may return incomplete results
+
+AuditLogs
+    | where TimeGenerated > ago (30d)
+    | where OperationName == "Read BitLocker key"
+    | extend ReadBy = tostring((InitiatedBy.user).userPrincipalName)
+    | extend Details = tostring(AdditionalDetails.[0].value)
+    | parse Details with * "device: '" DeviceId "'"
+    | parse Details with * "ID: '" KeyId "'" *
+| join kind = inner (SigninLogs
+    | where TimeGenerated > ago (30d)
+    | extend DeviceName = tostring(DeviceDetail.displayName)
+    | extend DeviceId = tostring(DeviceDetail.deviceId)
+    ) on $left.DeviceId == $right.DeviceId
+| summarize by TimeGenerated, DeviceName, DeviceId, KeyId, OperationName, ReadBy
+
+
+
+
+// Utilize query below to return full list of DeviceIds and Keys Read
+// Note this will not return DeviceName, only DeviceId
+
+AuditLogs
+    | where TimeGenerated > ago (30d)
+    | where OperationName == "Read BitLocker key"
+    | extend ReadBy = tostring((InitiatedBy.user).userPrincipalName)
+    | extend Details = tostring(AdditionalDetails.[0].value)
+    | parse Details with * "device: '" DeviceId "'"
+    | parse Details with * "ID: '" KeyId "'" *
+| project TimeGenerated, DeviceId, KeyId, OperationName, ReadBy
