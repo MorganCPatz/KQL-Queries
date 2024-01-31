@@ -1,0 +1,13 @@
+// Query to detect the creation of Role Assignable Groups
+
+AuditLogs
+| where TimeGenerated > ago (90d)
+| where OperationName == "Add group"
+| where parse_json(tostring(TargetResources[0].modifiedProperties))[1].displayName == "IsAssignableToRole"
+| where parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue))[0] == true
+| extend GroupName = TargetResources[0].displayName
+| extend CreatedBy = (InitiatedBy.user).userPrincipalName
+| project ['Date Created'] = TimeGenerated,
+          OperationName,
+          GroupName,
+          CreatedBy
