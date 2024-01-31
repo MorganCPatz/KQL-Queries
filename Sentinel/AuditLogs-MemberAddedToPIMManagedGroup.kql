@@ -2,7 +2,7 @@
 // Returns basic summary of changes made
 
 AuditLogs
-| where TimeGenerated > ago (90d)
+| where TimeGenerated > ago (7d)
 | where OperationName in~("Add eligible member to role in PIM completed (permanent)", "Add member to role in PIM completed (permanent)")
 | where TargetResources[2].type == "Group" or TargetResources[2].type == "User"
 | where TargetResources[0].displayName == "Member"
