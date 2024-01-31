@@ -2,7 +2,7 @@
 // Displays results where recipient domain does not match user domain
 
 OfficeActivity
-| where TimeGenerated > ago (90d)
+| where TimeGenerated > ago (1d)
 | where Operation in~("New-InboxRule", "Set-InboxRule")
 | mv-expand todynamic(Parameters)
 | where Parameters.Name in~("ForwardTo", "ForwardAsAttachmentTo")
