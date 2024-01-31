@@ -1,0 +1,12 @@
+// Query to track users/groups being added to PIM Managed Groups
+// Returns basic summary of changes made
+
+AuditLogs
+| where TimeGenerated > ago (90d)
+| where OperationName in~("Add eligible member to role in PIM completed (permanent)", "Add member to role in PIM completed (permanent)")
+| where TargetResources[2].type == "Group" or TargetResources[2].type == "User"
+| where TargetResources[0].displayName == "Member"
+| extend ObjectAdded = TargetResources[2].displayName
+| extend ChangedBy = InitiatedBy.user.userPrincipalName
+| extend ['PIM Managed Group'] = TargetResources[3].displayName
+| project TimeGenerated,OperationName, ObjectAdded, ['PIM Managed Group'], ChangedBy
