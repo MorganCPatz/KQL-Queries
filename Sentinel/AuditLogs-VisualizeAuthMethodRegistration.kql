@@ -1,0 +1,9 @@
+// Query to track and visualize authentication methods registration counts over time
+// Modify #4 to add or remove additional methods to track
+
+AuditLogs
+| where TimeGenerated > ago (90d)
+| where OperationName == "User registered security info"
+| where Result == "success" and ResultDescription has_any("fido", "authenticator", "temporary")
+| summarize AuthMethodsRegistered = count() by ResultDescription, bin(TimeGenerated, 1d)
+| render timechart
