@@ -1,0 +1,26 @@
+// Query to detect when permissions are granted to a mailbox
+// Some results are omitted when using parse-where due to inconsistent format in RawEventData
+// Does not return results where MailboxGrantedAccess cannot be parsed (is empty/null)
+
+CloudAppEvents
+| where ActionType == "Add-MailboxPermission"
+| extend TargetMailbox = RawEventData.ObjectId
+| extend AccessRights = ObjectName
+| extend Actor = RawEventData.UserId
+| parse-where RawEventData.Parameters with * 'User","Value":"' MailboxGrantedAccess '"' *
+| project Timestamp, Actor, ActionType, TargetMailbox, MailboxGrantedAccess, AccessRights
+
+
+
+
+// Query to detect when permissions are granted to a mailbox
+// Use this query to Returns all events - AdditionalDetails provided to supplement 
+
+CloudAppEvents
+| where ActionType == "Add-MailboxPermission"
+| extend TargetMailbox = RawEventData.ObjectId
+| extend AccessRights = ObjectName
+| extend Actor = RawEventData.UserId
+| parse RawEventData.Parameters with * 'User","Value":"' MailboxGrantedAccess '"' *
+| extend AdditionalDetails = RawEventData.Parameters
+| project Timestamp, Actor, ActionType, TargetMailbox, MailboxGrantedAccess, AccessRights, AdditionalDetails
