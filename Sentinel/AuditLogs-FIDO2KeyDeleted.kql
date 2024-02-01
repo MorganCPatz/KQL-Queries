@@ -1,0 +1,15 @@
+// Query to detect when FIDO2 security keys are deleted from an account
+// AccountObjectId displayed when UserPrincipalName is returned as null
+
+AuditLogs
+| where TimeGenerated > ago (90d)
+| where OperationName == "Delete FIDO2 security key(s)"
+| parse AdditionalDetails with * 'AdditionalInfo","value":"' Result '"' * 
+| extend DeletedBy = iif(isnotnull((InitiatedBy.user).userPrincipalName),
+                         InitiatedBy.user.userPrincipalName,
+                         InitiatedBy.user.id)
+| extend IPAddress = (InitiatedBy.user).ipAddress
+| extend TargetAccount = iif(isnotnull(TargetResources[0].userPrincipalName),
+                             TargetResources[0].userPrincipalName,
+                             TargetResources[0].id)
+| project TimeGenerated, OperationName, Result, TargetAccount, DeletedBy, IPAddress
