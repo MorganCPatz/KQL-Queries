@@ -1,0 +1,13 @@
+// Query to detect all devices registered to Entra ID in the past day
+// Can be modified to include all join types, omit specific OS, etc.
+
+AuditLogs
+| where TimeGenerated > ago (1d)
+| where OperationName == "Register device"
+| extend JoinType = parse_json(AdditionalDetails[2].value)
+| where JoinType != "AutoPilot" and Result == "success"
+| extend JoinedBy = parse_json(InitiatedBy).user.userPrincipalName
+| extend DeviceOS = parse_json(AdditionalDetails[3].value)
+| extend DeviceId = tostring(parse_json(AdditionalDetails[4].value))
+| summarize arg_max(TimeGenerated, *) by DeviceId
+| project-reorder TimeGenerated, JoinType, DeviceOS, DeviceId, JoinedBy
