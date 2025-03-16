@@ -1,9 +1,0 @@
-// Simple query to see how Conditional Access Policies in Report-Only Mode affect users
-// Additional filtering may be required, such as ResultType == 0 to ensure results shown for otherwise successful logins
-
-SigninLogs
-| mv-expand ConditionalAccessPolicies
-| where ConditionalAccessPolicies.result has_any ("reportOnlyFailure", "reportOnlySuccess", "reportOnlyInterrupted", "reportOnlyNotApplied")
-| extend CAP = tostring(ConditionalAccessPolicies.displayName)
-| extend ['CAP Result'] = tostring(ConditionalAccessPolicies.result)
-| project-reorder TimeGenerated, Identity, UserPrincipalName, AppDisplayName, CAP, ['CAP Result'], ClientAppUsed, ResultType, ResultDescription
