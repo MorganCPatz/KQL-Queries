@@ -1,0 +1,15 @@
+// Simple function to search for Group Membership changes
+// Can be utilized to search based on group name, user affected, or see changes made by an administrator
+
+let Operations = dynamic(["Add member to group", "Remove member from group"]);
+AuditLogs
+| where Category == "GroupManagement"
+| where OperationName has_any(Operations)
+| extend ChangedBy = iff(isnotnull(InitiatedBy.app.displayName),
+                        InitiatedBy.app.displayName,
+                        InitiatedBy.user.userPrincipalName)
+| extend GroupName = iff(isnotnull(TargetResources[0].modifiedProperties[1].oldValue),
+                            parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)),
+                            parse_json(tostring(TargetResources[0].modifiedProperties[1].newValue)))
+| extend UserAccount = TargetResources[0].userPrincipalName
+| project-reorder TimeGenerated, GroupName, OperationName, UserAccount, ChangedBy
