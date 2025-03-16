@@ -1,0 +1,10 @@
+// Simple function to display results for Conditional Access Policies in Report-Only Mode
+// Project-Reorder used to allow additional columns and or results be displayed 
+
+SigninLogs
+| where ResultType == "0"
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies.result has_any ("reportOnlyFailure", "reportOnlySuccess", "reportOnlyInterrupted", "reportOnlyNotApplied")
+| extend CAP = tostring(ConditionalAccessPolicies.displayName)
+| extend CAPresult = tostring(ConditionalAccessPolicies.result)
+| project-reorder TimeGenerated, Identity, UserPrincipalName, AppDisplayName, CAP, CAPresult, ClientAppUsed, ResultType, ResultDescription
