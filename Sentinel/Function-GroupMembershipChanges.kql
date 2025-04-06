@@ -1,15 +1,16 @@
 // Simple function to search for Group Membership changes
-// Can be utilized to search based on group name, user affected, or see changes made by an administrator
+// Can be utilized to search based on group name, group ObjectId, Name, etc.
 
 let Operations = dynamic(["Add member to group", "Remove member from group"]);
 AuditLogs
 | where Category == "GroupManagement"
 | where OperationName has_any(Operations)
-| extend ChangedBy = iff(isnotnull(InitiatedBy.app.displayName),
-                        InitiatedBy.app.displayName,
-                        InitiatedBy.user.userPrincipalName)
+| extend Actor = coalesce(InitiatedBy.app.displayName, InitiatedBy.user.userPrincipalName)
+| extend Object = coalesce(TargetResources[0].displayName, TargetResources[0].userPrincipalName)
 | extend GroupName = iff(isnotnull(TargetResources[0].modifiedProperties[1].oldValue),
-                            parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)),
-                            parse_json(tostring(TargetResources[0].modifiedProperties[1].newValue)))
-| extend UserAccount = TargetResources[0].userPrincipalName
-| project-reorder TimeGenerated, GroupName, OperationName, UserAccount, ChangedBy
+			parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)),
+			parse_json(tostring(TargetResources[0].modifiedProperties[1].newValue)))
+| extend GroupObjectId = iff(isnotnull(TargetResources[0].modifiedProperties[0].oldValue),
+			parse_json(tostring(TargetResources[0].modifiedProperties[0].oldValue)),
+			parse_json(tostring(TargetResources[0].modifiedProperties[0].newValue)))
+| project TimeGenerated, OperationName, GroupName, GroupObjectId, Object, Actor
