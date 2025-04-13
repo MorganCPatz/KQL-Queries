@@ -2,8 +2,8 @@
 // Operations include updates (add/remove item) and deletion of a Watchlist
 
 AzureActivity
-| where OperationNameValue startswith "Microsoft.SecurityIngiths/watchlists"
-| where OperationName has_any ("delete, write")
+| where OperationNameValue startswith "Microsoft.SecurityInsights/watchlists"
+| where OperationName has_any ("delete", "write")
 | where ActivityStatus == "Succeeded"
 | extend URI = tostring(parse_json(HTTPRequest).uri)
 | parse URI with * '/workspaces/' Workspace: string '/' *
@@ -11,4 +11,4 @@ AzureActivity
 | parse URI with * '/watchlists/' Delimiter2: string '?' *
 | extend Watchlist = coalesce(Delimiter1, Delimiter2)
 | extend ChangedBy = Caller
-| project-reoder TimeGenerated, OperationName, Watchlist, Workspace, ResourceGroup, ChangedBy
+| project TimeGenerated, OperationName, Watchlist, Workspace, ResourceGroup, ChangedBy
