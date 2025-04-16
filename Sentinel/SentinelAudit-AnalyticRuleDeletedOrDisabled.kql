@@ -5,8 +5,8 @@ SentinelAudit
 | where Description has_any ("Create or update analytics rule.", "Analytics rule deleted")
 | where ExtendedProperties.OriginalResourceState <> "null"
 | extend Actor = ExtendedProperties.CallerName
-| extend ResourceState 1 = parse_json(tostring(parse_json(tostring(ExtendedProperties.OriginalResourceState)).properties)).query
-| extend ResourceState 2 = parse_json(tostring(parse_json(tostring(ExtendedProperties.UpdatedResourceState)).properties)).query
+| extend ResourceState1 = parse_json(tostring(parse_json(tostring(ExtendedProperties.OriginalResourceState)).properties)).query
+| extend ResourceState2 = parse_json(tostring(parse_json(tostring(ExtendedProperties.UpdatedResourceState)).properties)).query
 | where ResourceState2 != tostring(ResourceState1) and ResourceState2 != "true"
 | extend State = iif(ResourceState2 == "false",
                      "Analytics rule has been disabled",
