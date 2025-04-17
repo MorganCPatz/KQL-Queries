@@ -1,0 +1,16 @@
+// Query to see enabled analytic rule configurations at a glance
+// Additional properties can be added or removed as necessary
+
+
+SentinelHealth
+| where OperationName == "Scheduled analytics rule run"
+| extend AggregationKind = tostring(ExtendedProperties.AggregationKind),
+         QueryFrequency = tostring(ExtendedProperties.QueryFrequency),
+	       QueryPeriod = tostring(ExtendedProperties.QueryPeriod),
+         TriggerOperator = tostring(ExtendedProperties.TriggerOperator),
+ 	       TriggerThreshold = tostring(ExtendedProperties.TriggerThreshold),
+	       TriggerType = tostring(ExtendedProperties.TriggerType),
+	       SuppressionEnabled = tostring(ExtendedProperties.SuppressionEnabled)
+| summarize arg_max(TimeGenerated, *) by SentinelResourceName
+| project SentinelResourceName, AggregationKind, QueryFrequency, QueryPeriod, SuppressionEnabled, TriggerOperator, TriggerThreshold, TriggerType
+| sort by SentinelResourceName asc
