@@ -1,0 +1,12 @@
+// Simple query to determine if an Analytic Rule has been modified
+// Contains logic to filter out new analytic rules
+
+SentinelAudit
+| where Description == "Create or update analytics rule."
+| where ExtendedProperties.OriginalResourceState <> "null"
+| extend Actor = ExtendedProperties.CallerName
+| extend OriginalQuery = parse_json(tostring(parse_json(tostring(ExtendedProperties.OriginalResourceState)).properties)).query
+| extend UpdatedQuery = parse_json(tostring(parse_json(tostring(ExtendedProperties.UpdatedResourceState)).properties)).query
+| extend RuleEnabled  = parse_json(tostring(parse_json(tostring(ExtendedProperties.UpdatedResourceState)).properties)).enabled
+| where UpdatedQuery != tostring(OriginalQuery)
+| project TimeGenerated, Description, SentinelResourceName, RuleEnabled, OriginalQuery, UpdatedQuery, Actor
