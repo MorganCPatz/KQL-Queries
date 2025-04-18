@@ -1,0 +1,13 @@
+// Query to display a summary of analyic rule run errors  
+// Can be used to identify potential issues with rules based on error code
+
+SentinelHealth
+| where OperationName == "Scheduled analytics rule run"
+| where Status != "Success" 
+| extend ErrorCode = tostring(parse_json(tostring(ExtendedProperties.Issues))[0].Code) 
+| extend ErrorDescription = tostring(parse_json(tostring(ExtendedProperties.Issues))[0].Description)
+| extend ErrorDescription = iff(ErrorCode == "EntitiesDroppedDueToMappingIssues",
+                                "EntitiesDroppedDueToMappingIssues",
+                                ErrorDescription)
+| summarize count() by SentinelResourceName, ErrorCode, ErrorDescription
+| sort by SentinelResourceName asc
