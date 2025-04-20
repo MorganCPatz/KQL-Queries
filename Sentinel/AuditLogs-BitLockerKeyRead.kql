@@ -22,10 +22,10 @@ AuditLogs
 // Note this will not return DeviceName, only DeviceId
 
 AuditLogs
-    | where TimeGenerated > ago (30d)
-    | where OperationName == "Read BitLocker key"
-    | extend ReadBy = tostring((InitiatedBy.user).userPrincipalName)
-    | extend Details = tostring(AdditionalDetails.[0].value)
-    | parse Details with * "device: '" DeviceId "'"
-    | parse Details with * "ID: '" KeyId "'" *
+| where TimeGenerated > ago (30d)
+| where OperationName == "Read BitLocker key"
+| extend ReadBy = tostring((InitiatedBy.user).userPrincipalName)
+| extend Details = tostring(AdditionalDetails.[0].value)
+| parse Details with * "device: '" DeviceId "'"
+| parse Details with * "ID: '" KeyId "'" *
 | project TimeGenerated, DeviceId, KeyId, OperationName, ReadBy
