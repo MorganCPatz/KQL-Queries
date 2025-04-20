@@ -8,9 +8,9 @@ AuditLogs
 | extend Actor = coalesce(InitiatedBy.app.displayName, InitiatedBy.user.userPrincipalName)
 | extend Object = coalesce(TargetResources[0].displayName, TargetResources[0].userPrincipalName)
 | extend GroupName = iff(isnotnull(TargetResources[0].modifiedProperties[1].oldValue),
-			parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)),
-			parse_json(tostring(TargetResources[0].modifiedProperties[1].newValue)))
+    parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)),
+    parse_json(tostring(TargetResources[0].modifiedProperties[1].newValue)))
 | extend GroupObjectId = iff(isnotnull(TargetResources[0].modifiedProperties[0].oldValue),
-			parse_json(tostring(TargetResources[0].modifiedProperties[0].oldValue)),
-			parse_json(tostring(TargetResources[0].modifiedProperties[0].newValue)))
+    parse_json(tostring(TargetResources[0].modifiedProperties[0].oldValue)),
+    parse_json(tostring(TargetResources[0].modifiedProperties[0].newValue)))
 | project TimeGenerated, OperationName, GroupName, GroupObjectId, Object, Actor
