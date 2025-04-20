@@ -2,10 +2,10 @@
 // Checks a specific group for members and then checks for device compliance state
 
 let Accounts = (IdentityInfo
-| where TimeGenerated > ago (7d)
-| mv-expand GroupMembership
-| where GroupMembership == "<GROUP TO WATCH>"
-| distinct AccountUPN);
+    | where TimeGenerated > ago (7d)
+    | mv-expand GroupMembership
+    | where GroupMembership == "<GROUP TO WATCH>"
+    | distinct AccountUPN);
 Accounts
 | join (IntuneDeviceComplianceOrg
     | where TimeGenerated > ago (90d)
