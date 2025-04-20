@@ -6,8 +6,8 @@ SigninLogs
 | where ConditionalAccessStatus == "failure"
 | where (isnotempty(DeviceDetail.trustType) and isnotempty(LocationDetails.countryOrRegion))
 | extend Country = tostring(LocationDetails.countryOrRegion),
-         State = tostring(LocationDetails.state),
-         City = tostring(LocationDetails.city)
+    State = tostring(LocationDetails.state),
+    City = tostring(LocationDetails.city)
 | where Country != "US"
 | summarize FailedLogins = count() by Country, State, City
 | top 10 by FailedLogins
