@@ -1,20 +1,21 @@
 // Query to detect add/remove changes to Administrative Units
 // Useful to track changes made to AU by Admins
 
-let AdminUnitChanges = dynamic(["Add member to administrative unit",
-                                "Add member to restricted management administrative unit", 
-                                "Remove member from administrative unit",
-                                "Remove member from restricted management administrative unit"]);
+let AdminUnitChanges = dynamic([
+    "Add member to administrative unit",
+    "Add member to restricted management administrative unit", 
+    "Remove member from administrative unit",
+    "Remove member from restricted management administrative unit"]);
 AuditLogs
 | where TimeGenerated > ago (7d)
 | where OperationName has_any (AdminUnitChanges)
 | extend ChangedBy = iff(isnotnull(InitiatedBy.app.displayName),
-                         InitiatedBy.app.displayName,
-                         InitiatedBy.user.userPrincipalName)
+    InitiatedBy.app.displayName,
+    InitiatedBy.user.userPrincipalName)
 | extend ObjectModified = iif(isnotnull(TargetResources[0].displayName),
-                            TargetResources[0].displayName,
-                            TargetResources[0].userPrincipalName)
+    TargetResources[0].displayName,
+    TargetResources[0].userPrincipalName)
 | extend AdministrativeUnit = iif(isnotnull(TargetResources[0].modifiedProperties[1].newValue),
-                            TargetResources[0].modifiedProperties[1].newValue,
-                            TargetResources[0].modifiedProperties[1].oldValue)
+    TargetResources[0].modifiedProperties[1].newValue,
+    TargetResources[0].modifiedProperties[1].oldValue)
 | project TimeGenerated, OperationName, AdministrativeUnit, ObjectModified, ChangedBy
