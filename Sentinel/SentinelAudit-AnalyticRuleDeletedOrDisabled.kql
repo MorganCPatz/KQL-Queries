@@ -9,6 +9,6 @@ SentinelAudit
 | extend ResourceState2 = parse_json(tostring(parse_json(tostring(ExtendedProperties.UpdatedResourceState)).properties)).enabled
 | where ResourceState2 != tostring(ResourceState1) and ResourceState2 != "true"
 | extend State = iif(ResourceState2 == "false",
-                     "Analytics rule has been disabled",
-                     "Analytics rule has been deleted")
+     "Analytics rule has been disabled",
+     "Analytics rule has been deleted")
 | project TimeGenerated, SentinelResourceName, OperationName, State, Actor
