@@ -5,14 +5,14 @@ let PIMRoles = dynamic([
     "Global Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator",
     "Security Administrator", "Conditional Access Administrator", "Authentication Administrator"]);
 let AzureAssignedGroups = AuditLogs
-| where TimeGenerated > ago (7d)
-| where OperationName == "Add member to role completed (PIM activation)"
-| where parse_json(tostring(TargetResources[0].displayName)) has_any (PIMRoles)
-| where isnotempty(TargetResources[6])
-| extend PimGroup = iif(isnotempty(TargetResources[6].displayName),
-    TargetResources[6].displayName,
-    TargetResources[7].displayName)
-| distinct tostring(PimGroup);
+    | where TimeGenerated > ago (7d)
+    | where OperationName == "Add member to role completed (PIM activation)"
+    | where parse_json(tostring(TargetResources[0].displayName)) has_any (PIMRoles)
+    | where isnotempty(TargetResources[6])
+    | extend PimGroup = iif(isnotempty(TargetResources[6].displayName),
+        TargetResources[6].displayName,
+        TargetResources[7].displayName)
+    | distinct tostring(PimGroup);
 AzureAssignedGroups
     | join kind=inner (AuditLogs
     | where TimeGenerated > ago (30d) 
