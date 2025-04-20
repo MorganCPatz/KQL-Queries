@@ -1,24 +1,25 @@
 // Check for group membership changes on PIM Role Assigned groups
 // Obtains list of groups by checking for select PIM role activations
 
-let PIMRoles = dynamic(["Global Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator",
-                        "Security Administrator", "Conditional Access Administrator", "Authentication Administrator"]);
+let PIMRoles = dynamic([
+    "Global Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator",
+    "Security Administrator", "Conditional Access Administrator", "Authentication Administrator"]);
 let AzureAssignedGroups = AuditLogs
 | where TimeGenerated > ago (7d)
 | where OperationName == "Add member to role completed (PIM activation)"
 | where parse_json(tostring(TargetResources[0].displayName)) has_any (PIMRoles)
 | where isnotempty(TargetResources[6])
 | extend PimGroup = iif(isnotempty(TargetResources[6].displayName),
-                        TargetResources[6].displayName,
-                        TargetResources[7].displayName)
+    TargetResources[6].displayName,
+    TargetResources[7].displayName)
 | distinct tostring(PimGroup);
 AzureAssignedGroups
     | join kind=inner (AuditLogs
     | where TimeGenerated > ago (30d) 
     | where OperationName == "Add member to group" or OperationName == "Remove member from group"
-        | extend AzureRoleEnabledGroup = iff(isnotnull(TargetResources[0].modifiedProperties[1].newValue),
-                        parse_json(tostring(TargetResources[0].modifiedProperties[1].newValue)),
-                        parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)))
+    | extend AzureRoleEnabledGroup = iff(isnotnull(TargetResources[0].modifiedProperties[1].newValue),
+        parse_json(tostring(TargetResources[0].modifiedProperties[1].newValue)),
+        parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)))
     | extend AzureRoleEnabledGroup = tostring(AzureRoleEnabledGroup)
     | extend ChangedBy = (InitiatedBy.user).userPrincipalName
     ) on $left.PimGroup == $right.AzureRoleEnabledGroup
