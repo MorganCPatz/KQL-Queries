@@ -4,19 +4,19 @@
 // Output includes First + Last Detection per analytic rule
 
 let TotalAnalyticRuleRuns = SentinelHealth
-| where TimeGenerated > ago (30d)
-| where OperationName == "Scheduled analytics rule run"
-| where Status != "Failure" 
-| summarize count() by SentinelResourceName
-| project SentinelResourceName, TotalRuns = count_;
+    | where TimeGenerated > ago (30d)
+    | where OperationName == "Scheduled analytics rule run"
+    | where Status != "Failure" 
+    | summarize count() by SentinelResourceName
+    | project SentinelResourceName, TotalRuns = count_;
 TotalAnalyticRuleRuns
-| join (SentinelHealth
-| where TimeGenerated > ago (30d)
-| where OperationName == "Scheduled analytics rule run"
-| where Status != "Failure" 
-| where ExtendedProperties.AlertsGeneratedAmount <> 0
-| summarize FirstDetection = min(TimeGenerated),LastDetection = max(TimeGenerated), count() by SentinelResourceName
-| extend Detections = count_
+    | join (SentinelHealth
+    | where TimeGenerated > ago (30d)
+    | where OperationName == "Scheduled analytics rule run"
+    | where Status != "Failure" 
+    | where ExtendedProperties.AlertsGeneratedAmount <> 0
+    | summarize FirstDetection = min(TimeGenerated),LastDetection = max(TimeGenerated), count() by SentinelResourceName
+    | extend Detections = count_
 ) on $left.SentinelResourceName == $right.SentinelResourceName
 | extend DetectionPercentage = round((todouble(Detections) / TotalRuns * 100), 2)
 | project SentinelResourceName, TotalRuns, Detections, DetectionPercentage, FirstDetection, LastDetection
@@ -34,18 +34,18 @@ TotalAnalyticRuleRuns
 
 
 let TotalAnalyticRuleRuns = SentinelHealth
-| where TimeGenerated > ago (30d)
-| where OperationName == "Scheduled analytics rule run"
-| where Status != "Failure" 
-| summarize FirstRun = min(TimeGenerated), LastRun = max(TimeGenerated), count() by SentinelResourceName
-| project SentinelResourceName, TotalRuns = count_, FirstRun, LastRun;
+    | where TimeGenerated > ago (30d)
+    | where OperationName == "Scheduled analytics rule run"
+    | where Status != "Failure" 
+    | summarize FirstRun = min(TimeGenerated), LastRun = max(TimeGenerated), count() by SentinelResourceName
+    | project SentinelResourceName, TotalRuns = count_, FirstRun, LastRun;
 TotalAnalyticRuleRuns
-| join (SentinelHealth
-| where TimeGenerated > ago (30d)
-| where OperationName == "Scheduled analytics rule run"
-| where Status != "Failure" 
-| where ExtendedProperties.AlertsGeneratedAmount == 0
-| summarize count() by SentinelResourceName
+    | join (SentinelHealth
+    | where TimeGenerated > ago (30d)
+    | where OperationName == "Scheduled analytics rule run"
+    | where Status != "Failure" 
+    | where ExtendedProperties.AlertsGeneratedAmount == 0
+    | summarize count() by SentinelResourceName
 ) on $left.SentinelResourceName == $right.SentinelResourceName
 | extend DetectionPercentage = round((todouble(count_) / TotalRuns * -100 + 100), 2)
 | extend Detections = TotalRuns - count_
