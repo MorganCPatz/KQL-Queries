@@ -22,5 +22,5 @@ AzureAssignedGroups
         parse_json(tostring(TargetResources[0].modifiedProperties[1].oldValue)))
     | extend AzureRoleEnabledGroup = tostring(AzureRoleEnabledGroup)
     | extend ChangedBy = (InitiatedBy.user).userPrincipalName
-    ) on $left.PimGroup == $right.AzureRoleEnabledGroup
+) on $left.PimGroup == $right.AzureRoleEnabledGroup
 | project TimeGenerated, AzureRoleEnabledGroup, OperationName, ChangedBy
