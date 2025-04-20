@@ -12,7 +12,7 @@ AuditLogs
     | where TimeGenerated > ago (30d)
     | extend DeviceName = tostring(DeviceDetail.displayName)
     | extend DeviceId = tostring(DeviceDetail.deviceId)
-    ) on $left.DeviceId == $right.DeviceId
+) on $left.DeviceId == $right.DeviceId
 | summarize by TimeGenerated, DeviceName, DeviceId, KeyId, OperationName, ReadBy
 
 
