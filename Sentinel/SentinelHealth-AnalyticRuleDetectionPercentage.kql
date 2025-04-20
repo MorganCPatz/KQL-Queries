@@ -10,7 +10,7 @@ let TotalAnalyticRuleRuns = SentinelHealth
     | summarize count() by SentinelResourceName
     | project SentinelResourceName, TotalRuns = count_;
 TotalAnalyticRuleRuns
-    | join (SentinelHealth
+| join (SentinelHealth
     | where TimeGenerated > ago (30d)
     | where OperationName == "Scheduled analytics rule run"
     | where Status != "Failure" 
@@ -40,7 +40,7 @@ let TotalAnalyticRuleRuns = SentinelHealth
     | summarize FirstRun = min(TimeGenerated), LastRun = max(TimeGenerated), count() by SentinelResourceName
     | project SentinelResourceName, TotalRuns = count_, FirstRun, LastRun;
 TotalAnalyticRuleRuns
-    | join (SentinelHealth
+| join (SentinelHealth
     | where TimeGenerated > ago (30d)
     | where OperationName == "Scheduled analytics rule run"
     | where Status != "Failure" 
