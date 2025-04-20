@@ -1,9 +1,12 @@
 // Check for Authentication Methods changed events for Privileged Accounts 
 // Generates list of priivleged accounts by checking for select PIM role activations
 
-let PIMRoles = dynamic(["Global Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator", "Security Administrator"]);
-let AccountActions = dynamic(["Admin deleted security info", "Admin registered security info", "Reset password (by Admin)", 
-                              "Reset password (self-service)", "User registered security info", "User deleted security info"]);
+let PIMRoles = dynamic([
+    "Global Administrator", "Privileged Authentication Administrator", 
+    "Privileged Role Administrator", "Security Administrator"]);
+let AccountActions = dynamic([
+    "Admin deleted security info", "Admin registered security info", "Reset password (by Admin)", 
+    "Reset password (self-service)", "User registered security info", "User deleted security info"]);
 let AdminAccountActions = AuditLogs
     | where TimeGenerated > ago (7d)
     | where OperationName == "Add member to role completed (PIM activation)"
