@@ -7,14 +7,12 @@ AzureActivity
 | where ResourceId contains "Microsoft.KeyVault"
 | where OperationName == "Create role assignment"
 | extend Scope = parse_json(Authorization).scope 
-| parse Scope with * '/secrets/' Secret: string '/'*
+| parse Scope with * '/secrets/' Secret: string '/' *
 | parse Scope with * '/vaults/' KeyVault: string '/' *
 | extend ['KeyVault or Secret'] = coalesce(tostring(Secret), KeyVault)
 | extend ObjectID = parse_json(tostring(parse_json(tostring(parse_json(Properties).requestbody)).Properties)).PrincipalId
 | extend RoleDefinitionID = tostring(parse_json(tostring(parse_json(tostring(parse_json(Properties).requestbody)).Properties)).RoleDefinitionId)
 | extend RoleID = extract(@'.*\/(.*)$', 1, RoleDefinitionID)
 | lookup AzureRoleIDs on $left.RoleID == $right.ID
-| extend AzureRole = Role
-| extend ChangedBy = Caller
 | where isnotnull(ObjectID)
-| project TimeGenerated, ResourceGroup, KeyVault, ['KeyVault or Secret'], OperationName, ChangedBy, ObjectID, AzureRole
+| project TimeGenerated, ResourceGroup, KeyVault, ['KeyVault or Secret'], OperationName, Caller, ObjectID, Role
