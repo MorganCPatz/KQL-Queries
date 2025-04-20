@@ -12,6 +12,6 @@ Accounts
     | where OS == "Windows"
     | where ComplianceState == "Compliant" or ComplianceState == "Not compliant"
     | project TimeGenerated, ComplianceState, UPN
-    ) on $left.AccountUPN == $right.UPN
+) on $left.AccountUPN == $right.UPN
 | summarize DeviceCount = count() by ComplianceState, bin(TimeGenerated, 1d)
 | render timechart (edited) 
