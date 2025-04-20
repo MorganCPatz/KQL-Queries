@@ -2,7 +2,7 @@
 // Displays results where recipient domain does not match user domain
 
 OfficeActivity
-| where TimeGenerated > ago (1d)
+| where TimeGenerated > ago (7d)
 | where Operation in~("New-InboxRule", "Set-InboxRule")
 | mv-expand todynamic(Parameters)
 | where Parameters.Name in~("ForwardTo", "ForwardAsAttachmentTo")
@@ -11,6 +11,6 @@ OfficeActivity
 | extend Recipients = Parameters.Value
 | where Recipients !contains UserDomain
 | extend InboxRuleName = iff(OfficeObjectId contains "onmicrosoft.com", 
-                             split(OfficeObjectId, '\\')[1],
-                             OfficeObjectId)   
+    split(OfficeObjectId, '\\')[1],
+    OfficeObjectId)   
 | project TimeGenerated, Operation, Action, UserId, Recipients, InboxRuleName
