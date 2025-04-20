@@ -7,7 +7,7 @@ SentinelHealth
 | extend ErrorCode = tostring(parse_json(tostring(ExtendedProperties.Issues))[0].Code) 
 | extend ErrorDescription = tostring(parse_json(tostring(ExtendedProperties.Issues))[0].Description)
 | extend ErrorDescription = iff(ErrorCode == "EntitiesDroppedDueToMappingIssues",
-                                "EntitiesDroppedDueToMappingIssues",
-                                ErrorDescription)
+    "EntitiesDroppedDueToMappingIssues",
+    ErrorDescription)
 | summarize count() by SentinelResourceName, ErrorCode, ErrorDescription
 | sort by SentinelResourceName asc
