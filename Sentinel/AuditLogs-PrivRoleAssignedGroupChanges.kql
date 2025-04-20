@@ -14,7 +14,7 @@ let AzureAssignedGroups = AuditLogs
         TargetResources[7].displayName)
     | distinct tostring(PimGroup);
 AzureAssignedGroups
-    | join kind=inner (AuditLogs
+| join kind=inner (AuditLogs
     | where TimeGenerated > ago (30d) 
     | where OperationName == "Add member to group" or OperationName == "Remove member from group"
     | extend AzureRoleEnabledGroup = iff(isnotnull(TargetResources[0].modifiedProperties[1].newValue),
