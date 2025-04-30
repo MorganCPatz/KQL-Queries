@@ -1,0 +1,8 @@
+// Query to return a list of IP Addresses a Service Principal signed in from
+// Useful to identify SPNs with signins from multiple locations and or IPs for Conditional Access
+
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| summarize ['IP Count'] = dcount(IPAddress), ['IP Addresses'] = make_set(IPAddress) by ServicePrincipalName, AppId
+| sort by ['IP Count'] desc
