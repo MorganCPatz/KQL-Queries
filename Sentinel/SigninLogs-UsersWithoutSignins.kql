@@ -10,7 +10,3 @@ SigninLogs
     | join kind = rightanti (WatchlistName
     | extend UserPrincipalName = tolower(UserPrincipalName)
 ) on UserPrincipalName
-
-
-
-SiginLogs-Users
