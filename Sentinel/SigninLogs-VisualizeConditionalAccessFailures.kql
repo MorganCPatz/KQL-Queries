@@ -2,10 +2,9 @@
 // Targets CA Poicies failures where StrongAuthentication or Device Compliant is required
 // https://learn.microsoft.com/en-us/entra/identity-platform/reference-error-codes
 
-Failures over time for CA policies requiring Strong Authentication Methds or DeviceCompliance
 SigninLogs
 | where TimeGenerated > ago (30d)
-//| where ResultType has_any ("50074", "53000")
+| where ResultType has_any ("50074", "53000")
 | mv-expand ConditionalAccessPolicies
 | where ConditionalAccessPolicies.result == "failure"
 | extend ['Conditional Access Policy'] = tostring(ConditionalAccessPolicies.displayName)
