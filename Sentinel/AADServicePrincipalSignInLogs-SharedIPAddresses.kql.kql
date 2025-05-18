@@ -1,4 +1,4 @@
-/ Query to return a list of IP Addresses that 2x or more SPNs have signed in from
+// Query to return a list of IP Addresses that 2x or more SPNs have signed in from
 // Can be useful to identify which IPs are used by multiple SPNs
 
 let IPs = AADServicePrincipalSignInLogs
