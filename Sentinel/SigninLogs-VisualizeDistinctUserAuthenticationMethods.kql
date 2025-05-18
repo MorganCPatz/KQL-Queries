@@ -1,0 +1,22 @@
+// Query to visualize Phishing Resistant vs Non Phishing Resistant Authentications over time
+// Summarizes authentication methods used per user/day and filters results users are only counted once per day
+// Results returned are number of distinct users per day
+
+let PhishingResistantMFA = dynamic(["Passkey (device-bound)", "Windows Hello for Business"]);
+let ExcludedMethods = dynamic(["Previously satisfied", "Password", "Other"]);
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where AuthenticationRequirement == "multiFactorAuthentication"
+| mv-expand todynamic(AuthenticationDetails)
+| extend AuthMethod = tostring(AuthenticationDetails.authenticationMethod)
+| where AuthMethod !in~(ExcludedMethods)
+| extend AuthType = iff(AuthMethod in~(PhishingResistantMFA),
+    "Phishing-Resistant MFA",
+    "Non Phishing-Resistant")
+| summarize SetAuthMethod = make_set(AuthType) by UserPrincipalName, bin(TimeGenerated, 1d)
+| extend AuthDetails = iff(array_length(SetAuthMethod) > 1,
+    "Multiple Methods Used",
+    SetAuthMethod)
+| summarize count() by AuthDetails, bin(TimeGenerated, 1d)
+| render timechart
