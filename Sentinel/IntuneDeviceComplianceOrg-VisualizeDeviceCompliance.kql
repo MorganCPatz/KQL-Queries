@@ -1,5 +1,6 @@
 // Visualizes device compliance over time for a specific team / group of users
 // Checks a specific group for members and then checks for device compliance state
+// Updated to exclude any devices where the Last Contact date is 30 days older than TimeGenerated
 
 let Accounts = (IdentityInfo
     | where TimeGenerated > ago (7d)
@@ -10,7 +11,10 @@ Accounts
 | join (IntuneDeviceComplianceOrg
     | where TimeGenerated > ago (90d)
     | where OS == "Windows"
-    | where ComplianceState == "Compliant" or ComplianceState == "Not compliant"
+    | where ComplianceState has_any ()"Compliant", "Not compliant")
+    | extend LastContact = todatetime(LastContact)
+    | extend TimeDifference = datetime_diff('day', TimeGenerated, LastContact)
+    | where TimeDifference <= 30
     | project TimeGenerated, ComplianceState, UPN
 ) on $left.AccountUPN == $right.UPN
 | summarize DeviceCount = count() by ComplianceState, bin(TimeGenerated, 1d)
