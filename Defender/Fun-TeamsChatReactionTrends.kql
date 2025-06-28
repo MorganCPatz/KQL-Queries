@@ -3,7 +3,7 @@
 
 CloudAppEvents
 | where Timestamp > ago (30d)
-| where ActionType = "ReactedToMessage"
+| where ActionType == "ReactedToMessage"
 | where RawEventData.ChatName == "<Chat>" 
 | summarize Count = count() by Reaction = tostring(RawEventData.MessageReactionType), bin(Timestamp, 1d)
 | where Count >= 5
