@@ -15,4 +15,4 @@ DeviceTvmSoftwareVulnerabilities
           RecommendedSecurityUpdateId,
           CVECount=dcount_CveId,
           PublishedDate
-| sort by DeviceName, asc, CVECount desc
+| sort by DeviceName asc, CVECount desc
