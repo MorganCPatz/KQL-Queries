@@ -1,0 +1,15 @@
+// Query to find signins from new IP Address in the last 7 days
+// Returns only IP that were not previously seen past X time range 
+// Can be useful to aid in detecting unusual and or unexpected login activity
+
+let logs = SigninLogs
+    | where TimeGenerated between (ago(90d) .. ago(7d))
+    | where UserPrincipalName in~(Users)
+    | distinct IPAddress;
+SigninLogs
+    | where TimeGenerated > ago (7d)
+    | where UserPrincipalName in~(Users)
+    | where isnull(DeviceDetail.displayName)
+    | where IPAddress !in(logs)
+| project TimeGenerated, UserPrincipalName, UserDisplayName, IPAddress, AppDisplayName, DeviceDetail
+| summarize arg_max(TimeGenerated, *) by UserPrincipalName
