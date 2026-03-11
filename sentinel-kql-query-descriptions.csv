@@ -1,4 +1,4 @@
-Query,Description,Last Updated
+Query,Description,Updated
 AADServicePrincipalSignInLogs-IPAddressActivity.kql,Returns list of IP addresses a Service Principal signed in from,11 months ago
 AADServicePrincipalSignInLogs-SharedIPAddresses.kql.kql,Returns list of IP Addresses that 2x or more SPNs have signed in from,10 months ago
 AuditLogs-AdministrativeUnitChanges.kql,Query to detect add / remove changes to Administrative Units,11 months ago
@@ -43,3 +43,4 @@ SigninLogs-UsersWithoutSignins.kql,Query to identify users who have not logged d
 SigninLogs-VisualizeConditionalAccessFailures.kql,Summarizes results of Conditional Access Policy Failures over time,10 months ago
 SigninLogs-VisualizeDistinctUserAuthenticationMethods.kql,Query to visualize Phishing Resistant vs Non Phishing Resistant Authentications over time,10 months ago
 SigninLogs-VisualizeNonCompliantDeviceSignins.kql,Summarizes count of successful signins for non-compliant devices over X period of time,2 years ago
+
