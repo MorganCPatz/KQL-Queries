@@ -1,46 +1,46 @@
-Query,Description,Updated
-AADServicePrincipalSignInLogs-IPAddressActivity.kql,Returns list of IP addresses a Service Principal signed in from,11 months ago
-AADServicePrincipalSignInLogs-SharedIPAddresses.kql.kql,Returns list of IP Addresses that 2x or more SPNs have signed in from,10 months ago
-AuditLogs-AdministrativeUnitChanges.kql,Query to detect add / remove changes to Administrative Units,11 months ago
-AuditLogs-BitLockerKeyRead.kql,Query to detect when a Bitlocker key has been read and returns DeviceName via SignInLogs table,11 months ago
-AuditLogs-ConditionalAccessChanges.kql,Query to detect changes to Conditional Access Policies and Named Locations,11 months ago
-AuditLogs-DevicesRegistered.kql,Query to detect all devices registered to Entra ID in the past 1 day,2 years ago
-AuditLogs-FIDO2KeyDeleted.kql,Query to detect when FIDO2 security keys are deleted from an account,11 months ago
-AuditLogs-LocalAdminPasswordAccessed.kql,Returns number of Local Administrator Passwords (LAPS) retrieved over time by admins,10 months ago
-AuditLogs-MemberAddedToPIM.kql,Query to track users and groups added to PIM Role Assignments,2 years ago
-AuditLogs-MemberAddedToPIMManagedGroup.kql,Query to track uers and groups being added to PIM Managed Groups,2 years ago
-AuditLogs-MultipleSSPRFailures.kql,Detects when a user has 5x or more SSPR failures within an hour,2 years ago
-AuditLogs-PrivAccountAuthenticationChanges.kql,Checks for Authentication Method changed events for Privileged Accounts,11 months ago
-AuditLogs-PrivRoleAssignedGroupChanges.kql,Checks for group membership changes on PIM Role Assigned groups,11 months ago
-AuditLogs-RoleAssignableGroupCreated.kql,Query to detect the creation of Role Assignable Groups,2 years ago
-AuditLogs-RoleAssignedOutsidePIM.kql,Query to detect Azure Roles assigned outside of PIM,11 months ago
-AuditLogs-SecurityInfoChangedByAdmin.kql,Query to track administrators changing account security info,11 months ago
-AuditLogs-UpdateAppCertificateOrSecret.kql,Query to detect certificate & secret changes to an application,11 months ago
-AuditLogs-VisualizeAuthMethodRegistration.kql,Query to track and visualize authentication method registration counts over time,2 years ago
-AuditLogs-VisualizePIMActivations.kql,Summarizes PIM activiations by role and PIM assigned groups,11 months ago
-AzureActivity-KeyVaultRoleAssigned.kql,Query to identify permission  assignment to a KeyVault or KeyVault Secret,11 months ago
-AzureActivity-KeyVaultRoleAssignmentChanges.kql,Updated query to identify permissions added / remove from a KeyVault or Secret,11 months ago
-AzureActivity-SentinelWatchlistChanges.kql,Query to detect when changes are made to Azure Sentinel Watchlists,11 months ago
-AzureDiagnostics-KeyVaultSecretUserActivity.kql,Query to obtain a list of user accounts that accessed or updated a KeyVault or Secret,last year
-Function-ConditionalAccessReportOnly.kql,Simple function to display results for Conditional Access Policies in Report-Only Mode,last year
-Function-GroupMembershipChanges.kql,Simple function to search for Group Membership Changes,11 months ago
-IntuneDeviceComplianceOrg-VisualizeDeviceCompliance.kql,Visualize device compliance over time for a specific team / group of users,10 months ago
-OfficeActivity-EmailsAccessed.kql,Query to search emails delivered within X period of time and accessed within the past X time,2 years ago
-OfficeActivity-ExternalEmailForwardingRules.kql,Query to detect created Inbox Rules that have forwarding actions,11 months ago
-OfficeActivity-TransportRuleActions.kql,Query to detect changes to Exchange Transport Rules,2 years ago
-SentinelAudit-AnalyticRuleDeletedOrDisabled.kql,Simple query to determine if an Analytics Rule has been Disabled or Deleted,11 months ago
-SentinelAudit-AnalyticRuleModified.kql,Simple query to determine if an Analytic Rule has been Modified,11 months ago
-SentinelHealth-AnalyticRuleConfigurations.kql,Query to see enabled Analytic Rule Configurations at a glance,11 months ago
-SentinelHealth-AnalyticRuleDetectionPercentage.kql,Query to display detection percentage / number of detections (alerted generated) per Analytic Rule,11 months ago
-SentinelHealth-AnalyticRuleRunErrors.kql,Query to display a summary of analytic rule run errors,11 months ago
-SigninLogs-AdminPortalSingleFactorAuthentication.kql,Query to identify accounts that are logging into one of the identified Admin Portals without MFA,11 months ago
-SigninLogs-ConditionalAccessPolicyFailures.kql,Summarizes Conditional Access Policy failures over time,2 years ago
-SigninLogs-MultipleCAFailures.kql,Query to identify users who had multiple CA fialures in X timeframe,2 years ago
-SigninLogs-NewIPAddressLoginActivity.kql,Query to find signins from new IP addresses in the last 7 days,9 months ago
-SigninLogs-PrivAccountMFAFailures.kql,Generates a list of Privileged Accounts based on previous PIM Activations,2 years ago
-SigninLogs-TopFailedLoginLocations.kql,Summarizes Failed Logins by locations and display top 10 results,11 months ago
-SigninLogs-UsersWithoutSignins.kql,Query to identify users who have not logged during the past X days via a watchlist,11 months ago
-SigninLogs-VisualizeConditionalAccessFailures.kql,Summarizes results of Conditional Access Policy Failures over time,10 months ago
-SigninLogs-VisualizeDistinctUserAuthenticationMethods.kql,Query to visualize Phishing Resistant vs Non Phishing Resistant Authentications over time,10 months ago
-SigninLogs-VisualizeNonCompliantDeviceSignins.kql,Summarizes count of successful signins for non-compliant devices over X period of time,2 years ago
+Query,Description
+AADServicePrincipalSignInLogs-IPAddressActivity.kql,Returns list of IP addresses a Service Principal signed in from
+AADServicePrincipalSignInLogs-SharedIPAddresses.kql,Returns list of IP Addresses that 2x or more SPNs have signed in from
+AuditLogs-AdministrativeUnitChanges.kql,Query to detect add / remove changes to Administrative Units
+AuditLogs-BitLockerKeyRead.kql,Query to detect when a Bitlocker key has been read and returns DeviceName via SignInLogs table
+AuditLogs-ConditionalAccessChanges.kql,Query to detect changes to Conditional Access Policies and Named Locations
+AuditLogs-DevicesRegistered.kql,Query to detect all devices registered to Entra ID in the past 1 day
+AuditLogs-FIDO2KeyDeleted.kql,Query to detect when FIDO2 security keys are deleted from an account
+AuditLogs-LocalAdminPasswordAccessed.kql,Returns number of Local Administrator Passwords (LAPS) retrieved over time by admins
+AuditLogs-MemberAddedToPIM.kql,Query to track users and groups added to PIM Role Assignments
+AuditLogs-MemberAddedToPIMManagedGroup.kql,Query to track uers and groups being added to PIM Managed Groups
+AuditLogs-MultipleSSPRFailures.kql,Detects when a user has 5x or more SSPR failures within an hour
+AuditLogs-PrivAccountAuthenticationChanges.kql,Checks for Authentication Method changed events for Privileged Accounts
+AuditLogs-PrivRoleAssignedGroupChanges.kql,Checks for group membership changes on PIM Role Assigned groups
+AuditLogs-RoleAssignableGroupCreated.kql,Query to detect the creation of Role Assignable Groups
+AuditLogs-RoleAssignedOutsidePIM.kql,Query to detect Azure Roles assigned outside of PIM
+AuditLogs-SecurityInfoChangedByAdmin.kql,Query to track administrators changing account security info
+AuditLogs-UpdateAppCertificateOrSecret.kql,Query to detect certificate & secret changes to an application
+AuditLogs-VisualizeAuthMethodRegistration.kql,Query to track and visualize authentication method registration counts over time
+AuditLogs-VisualizePIMActivations.kql,Summarizes PIM activiations by role and PIM assigned groups
+AzureActivity-KeyVaultRoleAssigned.kql,Query to identify permission  assignment to a KeyVault or KeyVault Secret
+AzureActivity-KeyVaultRoleAssignmentChanges.kql,Updated query to identify permissions added / remove from a KeyVault or Secret
+AzureActivity-SentinelWatchlistChanges.kql,Query to detect when changes are made to Azure Sentinel Watchlists
+AzureDiagnostics-KeyVaultSecretUserActivity.kql,Query to obtain a list of user accounts that accessed or updated a KeyVault or Secret
+Function-ConditionalAccessReportOnly.kql,Simple function to display results for Conditional Access Policies in Report-Only Mode
+Function-GroupMembershipChanges.kql,Simple function to search for Group Membership Changes
+IntuneDeviceComplianceOrg-VisualizeDeviceCompliance.kql,Visualize device compliance over time for a specific team / group of users
+OfficeActivity-EmailsAccessed.kql,Query to search emails delivered within X period of time and accessed within the past X time
+OfficeActivity-ExternalEmailForwardingRules.kql,Query to detect created Inbox Rules that have forwarding actions
+OfficeActivity-TransportRuleActions.kql,Query to detect changes to Exchange Transport Rules
+SentinelAudit-AnalyticRuleDeletedOrDisabled.kql,Simple query to determine if an Analytics Rule has been Disabled or Deleted
+SentinelAudit-AnalyticRuleModified.kql,Simple query to determine if an Analytic Rule has been Modified
+SentinelHealth-AnalyticRuleConfigurations.kql,Query to see enabled Analytic Rule Configurations at a glance
+SentinelHealth-AnalyticRuleDetectionPercentage.kql,Query to display detection percentage / number of detections (alerted generated) per Analytic Rule
+SentinelHealth-AnalyticRuleRunErrors.kql,Query to display a summary of analytic rule run errors
+SigninLogs-AdminPortalSingleFactorAuthentication.kql,Query to identify accounts that are logging into one of the identified Admin Portals without MFA
+SigninLogs-ConditionalAccessPolicyFailures.kql,Summarizes Conditional Access Policy failures over time
+SigninLogs-MultipleCAFailures.kql,Query to identify users who had multiple CA fialures in X timeframe
+SigninLogs-NewIPAddressLoginActivity.kql,Query to find signins from new IP addresses in the last 7 days
+SigninLogs-PrivAccountMFAFailures.kql,Generates a list of Privileged Accounts based on previous PIM Activations
+SigninLogs-TopFailedLoginLocations.kql,Summarizes Failed Logins by locations and display top 10 results
+SigninLogs-UsersWithoutSignins.kql,Query to identify users who have not logged during the past X days via a watchlist
+SigninLogs-VisualizeConditionalAccessFailures.kql,Summarizes results of Conditional Access Policy Failures over time
+SigninLogs-VisualizeDistinctUserAuthenticationMethods.kql,Query to visualize Phishing Resistant vs Non Phishing Resistant Authentications over time
+SigninLogs-VisualizeNonCompliantDeviceSignins.kql,Summarizes count of successful signins for non-compliant devices over X period of time
 
