@@ -6,7 +6,7 @@ let CvssThreshold = toreal("5");
 let DeviceVulnerabilities = (
 DeviceTvmSoftwareVulnerabilities
     | where DeviceName has (Hostname)
-    | where SoftwareVendor == "microsoft" and SoftwareName has "widows"
+    | where SoftwareVendor == "microsoft" and SoftwareName has "windows"
     | project CveId, RecommendedSecurityUpdate, RecommendedSecurityUpdateId);
 DeviceVulnerabilities
     | join DeviceTvmSoftwareVulnerabilitiesKB on CveId
