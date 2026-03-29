@@ -1,0 +1,15 @@
+// Query to find missing Widows Updates (and CVEs) for specific device
+// Returns list of CVEs by sorted by Score and Count
+
+let Hostname = "<hostname>";
+let CvssThreshold = toreal("5");
+let DeviceVulnerabilities = (
+DeviceTvmSoftwareVulnerabilities
+    | where DeviceName has (Hostname)
+    | where SoftwareVendor == "microsoft" and SoftwareName has "widows"
+    | project CveId, RecommendedSecurityUpdate, RecommendedSecurityUpdateId);
+DeviceVulnerabilities
+    | join DeviceTvmSoftwareVulnerabilitiesKb on CveId
+    | where CvssScore > CvssThreshold
+| summarize ['CVE Count'] = dcount(CveId), ["CVEs"] = make_set(CveId) by RecommendedSecurityUpdate, VulnerabilitySeverityLevel, CvssScore
+| sort by CvssScore, ['CVE Count'] desc
