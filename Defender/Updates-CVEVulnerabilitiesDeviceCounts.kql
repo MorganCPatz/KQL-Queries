@@ -1,0 +1,20 @@
+// Query to summarize number of CVEs found and provide summarized information
+// Returns list of CVE information including CVSS Score, Vector, and devices affected
+// Results can filtered by specifying values to Let statemets
+
+let CvssThreshold = toreal("5");
+let CVE = "";
+let Rating = "";
+DeviceTvmSoftwareVulnerabilitiesKB
+| where AffectedSoftware has "windows"
+| where CveId has (CVE)
+| where VulnerabilitySeverityLevel has (Rating)
+    | join DeviceTvmSoftwareVulnerabilities on CveId
+    | where CvssScore >= (CvssThreshold)
+| summarize DeviceCount = dcount(DeviceName), AffectedDevices = make_set(DeviceName) by CveId,
+    RecommendedSecurityUpdate,
+    VulnerabilitySeverityLevel,
+    CvssScore,
+    CvssVector,
+    VulnerabilityDescription
+| soft by CvssScore, DeviceCount desc
