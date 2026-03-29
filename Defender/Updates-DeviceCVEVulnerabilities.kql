@@ -9,7 +9,7 @@ DeviceTvmSoftwareVulnerabilities
     | where SoftwareVendor == "microsoft" and SoftwareName has "widows"
     | project CveId, RecommendedSecurityUpdate, RecommendedSecurityUpdateId);
 DeviceVulnerabilities
-    | join DeviceTvmSoftwareVulnerabilitiesKb on CveId
+    | join DeviceTvmSoftwareVulnerabilitiesKB on CveId
     | where CvssScore > CvssThreshold
 | summarize ['CVE Count'] = dcount(CveId), ["CVEs"] = make_set(CveId) by RecommendedSecurityUpdate, VulnerabilitySeverityLevel, CvssScore
 | sort by CvssScore, ['CVE Count'] desc
