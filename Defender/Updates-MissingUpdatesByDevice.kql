@@ -9,7 +9,7 @@ DeviceTvmSoftwareVulnerabilities
 | where OSPlatform contains "<OperatingSystem>"
 | where RecommendedSecurityUpdate contains "<UpdateMonthYear>"
 | join kind=inner DeviceTvmSoftwareVulnerabilitiesKB on CveId
-| summarize dcount(CveId), make_set(CveId) by DeviceName, PublishedDate, RecommendedSecurityUpdate, RecommendedSecurityUpdateId, PublishedDate,
+| summarize dcount(CveId), make_set(CveId) by DeviceName, PublishedDate, RecommendedSecurityUpdate, RecommendedSecurityUpdateId
 | project DeviceName,
           RecommendedSecurityUpdate,
           RecommendedSecurityUpdateId,
