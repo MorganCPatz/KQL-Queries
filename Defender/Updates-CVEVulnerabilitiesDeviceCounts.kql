@@ -17,4 +17,4 @@ DeviceTvmSoftwareVulnerabilitiesKB
     CvssScore,
     CvssVector,
     VulnerabilityDescription
-| soft by CvssScore, DeviceCount desc
+| sort by CvssScore, DeviceCount desc
