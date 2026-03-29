@@ -1,0 +1,14 @@
+// Query to see a summarized view of installed browser extensions found within the environment
+// Returns extension details such as risk, associated permissions, description, and number of devices
+
+let BrowserExtensions = DeviceTvmBrowserExtensions
+| summarize Devices = count() by ExtensionId;
+BrowserExtensions
+| join (DeviceTvmBrowserExtensionsKB 
+    | where ExtensionRisk has_any("Critcal", "High")
+    ) on ExtensionId
+| summarize Permissions = tostring(make_set(PermissionId)) by ExtensionName, 
+    ExtensionId, 
+    ExtensionDescription, 
+    ExtensionRisk, 
+    Devices
