@@ -8,12 +8,12 @@ DeviceTvmSecureConfigurationAssessmentKB
 | join (DeviceTvmSecureConfigurationAssessment
     | where DeviceName has (Hostname)
     | where ConfigurationCategory has_any (Category)
-    | where ConfigurationSubCategory has_any (SubCategory)
+    | where ConfigurationSubcategory has_any (SubCategory)
 ) on ConfigurationId
 | summarize TotalDevices = count_distinct(DeviceId),
     Applicable = countif(IsApplicable == 1),
-    Compliant = countif(Is Applicable == 1 and IsCompliant == 1),
+    Compliant = countif(IsApplicable == 1 and IsCompliant == 1),
     NonCompliant = countif(IsApplicable == 1 and IsCompliant == 0),
     NonApplicable = countif(IsApplicable == 0)
-    by ConfigurationId, ConfigurationCategory, ConfigurationSubCategory, ConfigurationDescription, ConfigurationImpact
+    by ConfigurationId, ConfigurationCategory, ConfigurationSubcategory, ConfigurationDescription, ConfigurationImpact
 | sort by ConfigurationImpact desc
