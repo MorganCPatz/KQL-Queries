@@ -1,0 +1,19 @@
+// Query to check DeviceFileEvents for matches against newly added/modified File hash Indicators
+// Useful to quickly check for any signs of activity after updating the MDE File hash Indicator list
+// Note:  Does NOT query against full Indicator list; only IOCs added/modified in past X days
+
+let FileHashType = "SHA256";   // Acceptable input values:  SHA1, SHA256
+let AddedIOCs = (CloudAppEvents
+| where ActionType has_any ("AddIndicator", "DeleteIndicator", "EditIndicator")
+| where parse_json(RawEventData.IndicatorType) contains (FileHashType)
+| extend IndicatorAction = parse_json(RawEventData.IndicatorAction),
+    IndicatorSeverity = parse_json(RawEventData.IndicatorAlertSeverity),
+    IndicatorTitle = parse_json(RawEventData.IndicatorTitle),
+    IndicatorValue = tostring(parse_json(RawEventData.IndicatorValue))
+| project IndicatorTitle, IndicatorSeverity, IndicatorAction, IndicatorValue);
+AddedIOCs
+| join (DeviceFileEvents
+    | extend FileHash = iff(FileHashType == "SHA1", SHA1, SHA256)
+) on $left.IndicatorValue == $right.FileHash
+| project-reorder Timestamp
+| sort by Timestamp desc
