@@ -1,0 +1,12 @@
+// Query to provide an overview of changes to Defender for Endpoint Indicators
+// Returns general IOC information such as Type, Action, Value, Seveirty, etc.
+
+CloudAppEvents
+| where ActionType has_any ("AddIndicator", "EditIndicator", "DeleteIndicator")
+| extend AlertSeverity = parse_json(RawEventData.IndicatorAlertSeverity),
+    GenerateAlerts = parse_json(RawEventData.IndicatorGenerateAlerts),
+    IndicatorAction = parse_jsn(RawEventData.IndicatorAction),
+    IndicatorType = parse_json(RawEventData.IndicatorType),
+    IndicatorValue = parse_json(RawEventData.IndicatorValue),
+    UserId = parse_json(RawEventData.UserId)
+| project-reorder Timestamp, ActionType, IndicatorType, IndicatorValue, IndicatorAction, AlertSeverity, GenerateAlerts, AccountDisplayName, UserId
