@@ -1,7 +1,7 @@
 // Searches for Group MemberShip Changes for idendtified groups
 // Updated to display results when users OR groups are added/removed
 
-let PrivGroups = dynamic(['Enterprise Admins','Domain Admin','Administrators',,'Schema Admins','Account Operators','Backup Operators', 'Group Policy Creator Owners']);
+let PrivGroups = dynamic(['Enterprise Admins','Domain Admin','Administrators','Schema Admins','Account Operators','Backup Operators', 'Group Policy Creator Owners']);
 IdentityDirectoryEvents
 | where ActionType == "Group Membership changed"
 | where AdditionalFields has_any (PrivGroups)
