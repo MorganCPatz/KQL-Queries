@@ -1,0 +1,23 @@
+// Query to list direct and nested membership via ExposureGraphEdges table
+// Filter via 'SourceNodeLabel' to limit results to specific objects (ex. user, group) 
+
+let 1stDegree = ExposureGraphEdges
+    | where TargetNodeName == ""
+    | where EdgeLabel == "member of"
+    | extend 1stSource = SourceNodeName
+    | distinct 1stSource;
+let 2ndDegree = ExposureGraphEdges
+    | where TargetNodeName in (1stDegree)
+    | where EdgeLabel == "member of" 
+    | extend 2ndSource = SourceNodeName
+    | distinct 2ndSource;
+let 3rdDegree = ExposureGraphEdges
+    | where TargetNodeName in (2ndDegree)
+    | where EdgeLabel == "member of" 
+    | extend 3rdSource = SourceNodeName
+    | distinct 3rdSource;
+let NestedResults = union 1stDegree, 2ndDegree, 3rdDegree;
+NestedResults
+| summarize 1stDegreeMembership = make_set_if(1stSource, isnotempty(1stSource)),
+            2ndDegreeMembership = make_set_if(2ndSource, isnotempty(2ndSource)),
+            3rdDegreeMembership = make_set_if(3rdSource, isnotempty(3rdSource))
