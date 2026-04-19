@@ -23,7 +23,7 @@ let TaggedDevices = DeviceInfo
 DeviceNetworkEvents
 | where Timestamp > ago (7d)
 | where RemotePort == "3389"
-| where Remoteurl in (TaggedDevices)
+| where RemoteUrl in (TaggedDevices)
 | project-reorder Timestamp, InitiatingProcessAccountName, InitiatingProcessAccountUpn, DeviceName,
     InitiatingProcessFileName, InitiatingProcessVersionInfoFileDescription,
     ActionType, RemoteUrl, RemoteIP, RemotePort
