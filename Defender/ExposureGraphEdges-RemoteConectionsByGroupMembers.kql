@@ -14,7 +14,7 @@ AccountInfo
 | join (DeviceNetworkEvents
 | where Timestamp > ago (7d)
 | where RemotePort == "3389"
-) on $left.AccountUpn == $right.InititiatingProcessAccountUpn
+) on $left.AccountUpn == $right.InitiatingProcessAccountUpn
 | project-reorder Timestamp, AccountDisplayName, AccountUpn, DeviceName, 
-    InititiatingProcessFileName, InitiatingProcessVersionInfoFileDescription,
+    InitiatingProcessFileName, InitiatingProcessVersionInfoFileDescription,
     ActionType, RemoteUrl, RemoteIP, RemotePort
