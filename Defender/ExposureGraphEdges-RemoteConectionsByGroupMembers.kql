@@ -1,0 +1,20 @@
+// Query to show which devices members of X group have connected to via 3389
+// Works best with static groups as this will populate with current membership
+// Note:  Account may/may not have been member of X group at time of connection
+
+let Accounts = ExposureGraphEdges
+| where TargetNodeName == "<YourGroup>"
+| where EdgeLabel == "member of"
+| project SourceNodeName;
+let AccountInfo = IdentityInfo
+| where isnotempty(AccountUpn)
+| where AccountDisplayName in (Accounts)
+| distinct AccountDisplayName, AccountUpn;
+AccountInfo
+| join (DeviceNetworkEvents
+| where Timestamp > ago (7d)
+| where RemotePort == "3389"
+) on $left.AccountUpn == $right.InititiatingProcessAccountUpn
+| project-reorder Timestamp, AccountDisplayName, AccountUpn, DeviceName, 
+    InititiatingProcessFileName, InitiatingProcessVersionInfoFileDescription,
+    ActionType, RemoteUrl, RemoteIP, RemotePort
