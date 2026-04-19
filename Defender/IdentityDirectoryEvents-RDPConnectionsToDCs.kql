@@ -1,0 +1,29 @@
+// Query to detect RDP connections over 3389 to Domain Controllers
+// Uses IdentityDirectoryEvents to populate list; require DCs to be onboarded to MDI
+
+let DCs = IdentityDirectoryEvents
+| where isnotempty(DestinationDeviceName)
+//| where not(DestinationDeviceName has_any ("<Domains to Exclude>")) // Optional to exclude forest and or parent/child domains
+| distinct DestinationDeviceName;
+DeviceNetworkEvents
+| where Timestamp > ago (7d)
+| where RemotePort == "3389"
+| where RemoteUrl in (DCs)
+| project-reorder Timestamp, InitiatingProcessAccountName, InitiatingProcessAccountUpn, DeviceName,
+    InitiatingProcessFileName, InitiatingProcessVersionInfoFileDescription,
+    ActionType, RemoteUrl, RemoteIP, RemotePort
+
+
+    
+// Alternate Query using Device Tagging to populate list of devices 
+
+let TaggedDevices = DeviceInfo
+| where DeviceManualTags has "Domain Controllers" // replace with your tag of choice
+| distinct DeviceName;
+DeviceNetworkEvents
+| where Timestamp > ago (7d)
+| where RemotePort == "3389"
+| where Remoteurl in (TaggedDevices)
+| project-reorder Timestamp, InitiatingProcessAccountName, InitiatingProcessAccountUpn, DeviceName,
+    InitiatingProcessFileName, InitiatingProcessVersionInfoFileDescription,
+    ActionType, RemoteUrl, RemoteIP, RemotePort
