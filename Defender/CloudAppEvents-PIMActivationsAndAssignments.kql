@@ -1,0 +1,16 @@
+// Query to show PIM Activations and Assignments for both Entra Roles and Groups
+// Provides basic output information such as User, Role/Group, and Result
+
+CloudAppEvents
+| where Timestamp > ago (7d)
+| where ActionType has_any("Add member to group.", "add member to role.", "Add eligible member to group.", "Add eligible member to role.")
+| where AccountDisplayName == "MS-PIM"
+| extend AccountUPN = parse_json(RawEventData).ObjectId
+| extend ["Entra Role or Group"] = parse_json(RawEventData.ModifiedProperties[1].NewValue)
+| extend Result = case(
+        ActionType == "Add member to group.", "PIM Group Activated",
+        ActionType == "Add member to role.", "PIM Role Activated",
+        ActionType == "Add eligible member to group.", "PIM Group Eligible Assignment",
+        ActionType == "Add eligible member to role.", "PIM Entra Role Eligible Assignment",
+        "N/A)"
+| project-reorder Timestamp, AccountUpn, ["Entra Role or Group"], ActionType, ActivityType, Result
