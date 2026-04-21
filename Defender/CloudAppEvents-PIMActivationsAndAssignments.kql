@@ -12,5 +12,5 @@ CloudAppEvents
         ActionType == "Add member to role.", "PIM Role Activated",
         ActionType == "Add eligible member to group.", "PIM Group Eligible Assignment",
         ActionType == "Add eligible member to role.", "PIM Entra Role Eligible Assignment",
-        "N/A)"
-| project-reorder Timestamp, AccountUpn, ["Entra Role or Group"], ActionType, ActivityType, Result
+        "N/A")
+| project-reorder Timestamp, AccountUPN, ["Entra Role or Group"], ActionType, ActivityType, Result
