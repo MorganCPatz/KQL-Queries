@@ -1,0 +1,20 @@
+// Query to detect when a user is added directly to a PIM Group vs a PIM Assignment
+// Generates list of PIM Groups with activity in last X days; checks where Actor != "MS-PIM"
+// Easy way to spot check - however, this query is resource intensive
+
+let PIMGroups = CloudAppEvents
+| where Timestamp > ago (7d)
+| where ActionType has_any ("Add eligible member to group.", "Add member to group.")
+| where AccountDisplayName == "MS-PIM"
+| extend Group = tostring(parse_json(RawEventData.ModifiedProperties[1].NewValue))
+| distinct Group;
+CloudAppEvents
+| where Timestamp > ago (7d)
+| where ActionType == "Add member to group."
+| where AccountDisplayName != "MS-PIM"
+| where parse_json(ActivityObjects[0].Name) in (PIMGroups)
+| extend Group = parse_json(ActivityObjects[0].Name),
+         Target = parse_json(ActivityObjects[1].Name),
+         TargetUPN = parse_json(RawEventData.ObjectId),
+         Actor = parse_json(RawEventData.UserId)
+| project-reorder Timestamp, Group, ActionType, Target, TargetUPN, Actor
