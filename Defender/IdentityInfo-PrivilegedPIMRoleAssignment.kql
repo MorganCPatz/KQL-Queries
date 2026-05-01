@@ -11,5 +11,6 @@ IdentityInfo
 | extend PimExpiration = tostring(PrivilegedEntraPimRoles[PrivilegedRole][1])
 | extend AssignmentType = tostring(PrivilegedEntraPimRoles[PrivilegedRole][2])
 | where isnotempty(PrivilegedRole)
+| where PrivilegedRole has_any (EntraRole)
 | distinct PrivilegedRole, AccountUpn, AssignmentType, PimAssignment, PimExpiration
 | sort by PrivilegedRole asc
