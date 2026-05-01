@@ -1,0 +1,15 @@
+// Query to Display Privileged Role Assignments - both eligible and permanent (assigned)
+// Useful to lookup Priv. Role Assignemnts for a specific user or Role
+
+let UPN = "";
+let EntraRole = dynamic([""]);
+IdentityInfo
+| where AccountUpn has (UPN)
+| mv-expand parse_json(PrivilegedEntraPimRoles)
+| extend PrivilegedRole = tostring(bag_keys(PrivilegedEntraPimRoles)[0])
+| extend PimAssignment = tostring(PrivilegedEntraPimRoles[PrivilegedRole][0])
+| extend PimExpiration = tostring(PrivilegedEntraPimRoles[PrivilegedRole][1])
+| extend AssignmentType = tostring(PrivilegedEntraPimRoles[PrivilegedRole][2])
+| where isnotempty(PrivilegedRole)
+| distinct PrivilegedRole, AccountUpn, AssignmentType, PimAssignment, PimExpiration
+| sort by PrivilegedRole asc
