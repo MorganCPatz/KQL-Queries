@@ -7,7 +7,7 @@ IdentityInfo
 | extend PrivilegedRole = tostring(bag_keys(PrivilegedEntraPimRoles)[0])
 | extend PimAssignment = tostring(PrivilegedEntraPimRoles[PrivilegedRole][0])
 | where isnotempty(PrivilegedRole)
-| distinct PrivilegedRole, AccountUPN, PimAssignment
+| distinct PrivilegedRole, AccountUpn, PimAssignment
 | summarize EligibleCount = countif(PimAssignment == "Eligible"),
             AssignedCount = countif(PimAssignment == "Assigned") by PrivilegedRole
 | sort by PrivilegedRole asc
