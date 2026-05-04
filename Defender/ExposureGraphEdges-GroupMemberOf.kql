@@ -1,0 +1,27 @@
+// Query to list direct and nested membership of Groups
+// Useful to identify all the groups is directly/indirectly a member of
+// This searches in the opposite direction (up) of KQL query "ExposureGraphEdges-NestedGroupMembership.kql"
+
+let Group = "";
+let 1stDegreeOf = ExposureGraphEdges
+    | where SourceNodeName == Group
+    | where EdgeLabel == "member of"
+    | extend 1stDegree = TargetNodeName
+    | distinct 1stDegree;
+let 2ndDegreeOf = ExposureGraphEdges
+    | where SourceNodeName in (1stDegreeOf)
+    | where EdgeLabel == "member of"
+    | extend 2ndDegree = TargetNodeName
+    | distinct 2ndDegree;
+let 3rdDegreeOf = ExposureGraphEdges
+    | where SourceNodeName in (2ndDegreeOf)
+    | where EdgeLabel == "member of"
+    | extend 3rdDegree == TargetNodeName
+    | distinct 3rdDegree;
+let GroupMemberOf = union 1stDegreeOf, 2ndDegreeOf, 3rdDegreeOf;
+GroupMemberOf 
+| summarize 1stDegreeMemberOf = make_set_if(1stDegree, isnotempty(1stDegree)),
+            2ndDegreeMemberOf = make_set_if(2ndDegree, isnotempty(2ndDegree)),
+            3rdDegreeMemberOf = make_set_if(3rdDegree, isnotempty(3rdDegree))
+            | extend BaseGroup = Group
+| project-reorder BaseGroup, 1stDegreeMemberOf, 2ndDegreeMemberOf, 3rdDegreeMemberOf
