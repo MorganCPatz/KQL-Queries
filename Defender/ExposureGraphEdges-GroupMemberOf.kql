@@ -16,7 +16,7 @@ let 2ndDegreeOf = ExposureGraphEdges
 let 3rdDegreeOf = ExposureGraphEdges
     | where SourceNodeName in (2ndDegreeOf)
     | where EdgeLabel == "member of"
-    | extend 3rdDegree == TargetNodeName
+    | extend 3rdDegree = TargetNodeName
     | distinct 3rdDegree;
 let GroupMemberOf = union 1stDegreeOf, 2ndDegreeOf, 3rdDegreeOf;
 GroupMemberOf 
