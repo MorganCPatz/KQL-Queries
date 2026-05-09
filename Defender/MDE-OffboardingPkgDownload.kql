@@ -1,0 +1,23 @@
+// Query to identify when the MDE Offboarding Script Package  is Downloaded to a Device
+// Attempts to match download event to the device where the package was downloaded**
+// ** Requires device to be onboarded to MDE for visibility
+// Joins on a created column and uses Time Difference to attempt to correlate activities
+
+let DownloadOffboardPkg = CloudAppEvents
+| where ActionType == "DownloadOffboardingPkg"
+| where parse_json(RawEventData.DeploymentMethod) == "DemoModeLocalMachine"
+| extend InitiatedBy = tostring(parse_json(RawEventData.UserId)),
+         Package = "WindowsDefenderATPOffboardingPackage",
+         DownloadTime = Timestamp,
+         Action = ActionType
+| project DownloadTime, Action, AccountDisplayName, InitiatedBy, Package;
+DeviceFileEvents
+| where ActionType == "FileCreated" and FileName startswith "WindowsDefenderATPOffboardingPackage"
+| extend Package = "WindowsDefenderATPOffboardingPackage",
+         FileCreatedTime = Timestamp,
+         DownloadDevice = DeviceName
+join kind = inner (DownloadOffboardPkg) on Package
+| where FileCreatedTime between (DownloadTime .. + 5m)
+| project DownloadTime, Action, InitiatedBy, AccountDisplayName,
+    DownloadDevice, ActionType, FileCreatedTime, FileName, FolderPath,
+    InitiatingProcessAccountName, InitiatingProcessAccountDomain
