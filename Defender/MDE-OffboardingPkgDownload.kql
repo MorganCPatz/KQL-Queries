@@ -16,7 +16,7 @@ DeviceFileEvents
 | extend Package = "WindowsDefenderATPOffboardingPackage",
          FileCreatedTime = Timestamp,
          DownloadDevice = DeviceName
-join kind = inner (DownloadOffboardPkg) on Package
+| join kind = inner (DownloadOffboardPkg) on Package
 | where FileCreatedTime between (DownloadTime .. + 5m)
 | project DownloadTime, Action, InitiatedBy, AccountDisplayName,
     DownloadDevice, ActionType, FileCreatedTime, FileName, FolderPath,
