@@ -2,7 +2,7 @@
 // See "IdentityDirectoryEvents-RDPCOnnectionsToDCs.kql" for use of IdentityDirectoryEvents + DeviceNetworkEvents
 // Returns RDP connections into DCs via Defender for Identity Tables 
 
-lets DCs = IdentityDirectoryEvents
+let DCs = IdentityDirectoryEvents
 | where isnotempty(DestinationDeviceName)
 | distinct DestinationDeviceName;
 IdentityLogonEvents
