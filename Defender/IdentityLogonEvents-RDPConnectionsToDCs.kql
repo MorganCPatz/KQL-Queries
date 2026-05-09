@@ -1,0 +1,14 @@
+// Alternate Query focused on using IdentityDirectoryEvents + IdentityLogonEvents
+// See "IdentityDirectoryEvents-RDPCOnnectionsToDCs.kql" for use of IdentityDirectoryEvents + DeviceNetworkEvents
+// Returns RDP connections into DCs via Defender for Identity Tables 
+
+lets DCs = IdentityDirectoryEvents
+| where isnotempty(DestinationDeviceName)
+| distinct DestinationDeviceName;
+IdentityLogonEvents
+| where LogonType == "Remote desktop"
+| where AccountUpn !contains "<Naming Scheme/Account to Exclude"
+| where TargetDeviceName in (DCs)
+| summarize arg_max(Timestamp, *) by DestinationDeviceName, AccountUpn, bin(Timestamp, 1d)
+| project Timestamp, ActionType, LogonType, AccountUpn, AccountDisplayName, DeviceName, TargetDeviceName
+| sort by Timestamp desc
