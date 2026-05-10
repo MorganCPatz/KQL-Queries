@@ -7,17 +7,13 @@ let DownloadOffboardPkg = CloudAppEvents
 | where ActionType == "DownloadOffboardingPkg"
 | where parse_json(RawEventData.DeploymentMethod) == "DemoModeLocalMachine"
 | extend InitiatedBy = tostring(parse_json(RawEventData.UserId)),
-         Package = "WindowsDefenderATPOffboardingPackage",
-         DownloadTime = Timestamp,
-         Action = ActionType
-| project DownloadTime, Action, AccountDisplayName, InitiatedBy, Package;
+         Package = "WindowsDefenderATPOffboardingPackage"
+| project DownloadTime = Timestamp, Action = ActionType, AccountDisplayName, InitiatedBy, Package;
 DeviceFileEvents
 | where ActionType == "FileCreated" and FileName startswith "WindowsDefenderATPOffboardingPackage"
-| extend Package = "WindowsDefenderATPOffboardingPackage",
-         FileCreatedTime = Timestamp,
-         DownloadDevice = DeviceName
+| extend Package = "WindowsDefenderATPOffboardingPackage"
 | join kind = inner (DownloadOffboardPkg) on Package
 | where FileCreatedTime between (DownloadTime .. + 5m)
 | project DownloadTime, Action, InitiatedBy, AccountDisplayName,
-    DownloadDevice, ActionType, FileCreatedTime, FileName, FolderPath,
+    Timestamp, ActionType, DeviceName, FileName, FolderPath,
     InitiatingProcessAccountName, InitiatingProcessAccountDomain
