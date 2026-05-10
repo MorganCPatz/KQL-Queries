@@ -1,0 +1,17 @@
+// Query show when a device was released from isolation as well as original isolation event
+// Useful to see quick information about an isolation + release event
+
+CloudAppEvents
+| where ActionType == "ReleaseFromIsolation"
+| extend DeviceName = tostring(parse_json(RawEventData.DeviceName))
+| extend ReleaseComment = parse_json(RawEventData.ActionComment)
+| extend ReleaseUserId = parse_json(RawEventData.UserId)
+| project ReleaseTime = Timestamp, ReleasedBy = AccountDisplayName, DeviceName, ReleaseComment, ReleaseUserId
+| join kind = inner (CloudAppEvents
+  | where ActionType == "IsolateDevice"
+  | extend DeviceName = tostring(parse_json(RawEventData.DeviceName))
+  | extend IsolateComment = parse_json(RawEventData.ActionComment)
+  | extend IsolateUserId = parse_json(RawEventData.UserId)
+  | project-rename IsolatedTime = Timestamp, IsolatedBy = AccountDisplayName
+) on DeviceName
+| project DeviceName, ReleaseTime, ReleaseComment, ReleasedBy, ReleaseUserId, IsolatedTime, IsolateComment, IsolatedBy, IsolateUserId
