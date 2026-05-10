@@ -5,7 +5,7 @@ CloudAppEvents
 | where ActionType == "RunLiveResponseSession"
 | where isnotempty(RawEventData.DeviceName)
 | extend UserId = parse_json(RawEventData.UserId)
-| extend CommandString = parse_json(RawEventData.CommandsString)
+| extend Command = parse_json(RawEventData.CommandsString)
 | extend DeviceName = parse_json(RawEventData.DeviceName)
-| project-reorder Timestamp, ActionType, AccountDisplayName, UserId, DeviceName, CommandsString
+| project-reorder Timestamp, ActionType, AccountDisplayName, UserId, DeviceName, Command
 | sort by Timestamp desc
