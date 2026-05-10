@@ -1,0 +1,14 @@
+// Queery to show changes made to Microsoft Defender for Endpoint Advanced FEatures
+// Can be used to filter or look for specific adv feature changes
+// Note - toggling a setting even if reverted back to original, may show as changed when saved
+
+let AdvFeatures = dynamic([""]);
+CloudAppEvents
+| where ActionType == "SetAdvancedFeatures"
+| where RawEventData.SettingName has_any (AdvFeatures)
+| extend UserId = parse_json(RawEventData.UserId)
+| extend AdvSetting = parse_json(RawEventData.SettingName)
+| extend SettingStatus = iff(RawEventData.SettingsNewValue == "True",
+    "Enabled",
+    "Disabled")
+| project-reorder Timestamp, ActionType, AccountDisplayName, UserId, AdvSetting, SettingStatus
