@@ -1,0 +1,11 @@
+// Query to Show Live Response Actions taken on a device
+// Note unless filtered, accessing and managing the script library will be listed
+
+CloudAppEvents
+| where ActionType == "RunLiveResponseSession"
+| where isnotempty(RawEventData.DeviceName)
+| extend UserId = parse_json(RawEventData.UserId)
+| extend CommandString = parse_json(RawEventData.CommandsString)
+| extend DeviceName = parse_json(RawEventData.DeviceName)
+| project-reorder Timestamp, ActionType, AccountDisplayName, UserId, DeviceName, CommandsString
+| sort by Timestamp desc
