@@ -3,11 +3,11 @@
 
 CloudAppEvents
 | where ActionType == "RunLiveResponseSession"
-| where RawEventData.CommandsString has_any "Library management - created", "Library management - deleted")
+| where RawEventData.CommandsString has_any ("Library management - created", "Library management - deleted")
 | extend UserId = parse_json(RawEventData.UserId)
 | extend FileName = parse_json(RawEventData.FileName)
 | extend FileSHA256 = parse_json(RawEventData.FileSHA256)
-| extend Action = iff(RawEventData.CommandsString contains "created"
+| extend Action = iff(RawEventData.CommandsString contains "created",
     "Script Created/Uploaded to Library",
     "Script Deleted/Remvoed from Library")
 | project-reorder Timestamp, ActionType, UserId, Action, FileName, FileSHA256
