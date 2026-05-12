@@ -6,6 +6,6 @@ CloudAppEvents
 | extend EventData = parse_json(RawEventData)
 | parse EventData.ResultDescription with * "ActionType=" Action ' ' * "AccountSid=" TargetSid ' ' *
 | project Timestamp, ActionType, Action, TargetSid, Actor = tostring(EventData.UserId)
-| join kind = inner CloudAppEvents on $left.TargetSid == $right.OnPremSid
+| join kind = inner IdentityInfo on $left.TargetSid == $right.OnPremSid
 | summarize arg_max(Timestamp, *) by Action, AccountUpn
 | project Timestamp, ActionType, Action, AccountDisplayName, AccountUpn, OnPremSid, Actor
