@@ -1,0 +1,19 @@
+// Query to potentially identify RMM Usage associated with an external Teams Call impersonating "Support"
+// Detects Rmm Usage + Then Attempts to correlate affected user to an associated Teams Call with an External User
+
+let Lookback = 7d;
+let RmmURLs = externaldata(URI: string)['https://raw.githubusercontent.com/jschell/RemoteManagementMonitoringTools/refs/heads/main/Network%20Indicators/RMM_SummaryNetworkURI.csv'];
+let TargetUpn = DeviceNetworkEvents
+| where Timestamp > ago (Lookback)
+| where ActionType == "ConnectionSuccess"
+| where RemoteUrl has_any (RmmURLs)
+| distinct InitiatingProcessAccountUpn;
+CloudAppEvents
+| where Timestamp > ago (Lookback)
+| where ActionType == "CallParticipantDetail"
+| where RawEventData.Attendees[0].UPN in (TargetUpn)
+| where (tolower(AccountId) matches regex @"(compliance|security|help|desk|support|assistance|admin|troubleshoot|onmicrosoft.com|^tech|$tech|tech\s)")
+| extend UserAccountUpn = parse_json(RawEventData.Attendees[0].UPN)
+| extend UserDisplayName = parse_json(RawEventData.Attendees[0].DisplayName)
+| where AccountUpn != AccountId
+| project-reorder Timestamp, UserDisplayName, UserAccountUpn, Application, ActionType, AccountId, AccountDisplayName
