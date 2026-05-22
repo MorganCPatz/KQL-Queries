@@ -1,0 +1,10 @@
+// Query to potentially detect External Teams Call impersonating "Support"
+// Uses regex to pattern match key words off of the external AccountId
+
+CloudAppEvents
+| where ActionType == "CallParticipantDetail"
+| where (tolower(AccountId) matches regex @"(compliance|security|help|desk|support|assistance|admin|troubleshoot|onmicrosoft.com|^tech|$tech|tech\s)")
+| extend UserAccountUpn = parse_json(RawEventData.Attendees[0].UPN)
+| extend UserDisplayName = parse_json(RawEventData.Attendees[0].DisplayName)
+| where AccountUpn != AccountId
+| project-reorder Timestamp, UserDisplayName, UserAccountUpn, Application, ActionType, AccountId, AccountDisplayName
