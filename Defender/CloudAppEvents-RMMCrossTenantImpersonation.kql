@@ -19,4 +19,5 @@ CloudAppEvents
 | extend JoinTime = todatetime(RawEventData.JoinTime)
 | extend LeaveTime = todatetime(RawEventData.LeaveTime)
 | where UserAccountUpn != AccountId
-| project Timestamp, Application, ActionType, JoinTime, LeaveTime, UserDisplayName, UserAccountUpn, ExternalId = AccountId, ExternalDisplayName = AccountDisplayName
+| project-rename ExternalId = AccountId, ExternalDisplayName = AccountDisplayName
+| project Timestamp, Application, ActionType, JoinTime, LeaveTime, UserDisplayName, UserAccountUpn, ExternalId, ExternalDisplayName
