@@ -1,0 +1,14 @@
+// Query to detect changes to Custom Detection Rules (Delete, Disable, Enable, Modify)
+// Useful to monitor if any changes were made to existing custom detection rules
+// Note:  Does not show specific changes aside from Delete/Disable/Enable
+
+CloudAppEvents
+| where ActionType has_any ("ChangeCustomDetectionRuleStatus", "EditCustomDetection", "DeleteCustomDetection")
+| extend ActorId = parse_json(RawEventData.UserId)
+| extend Query = parse_json(RawEventData.Query)
+| extend RuleName = parse_json(RawEventData.RuleName)
+| extend Action = case(ActionType == "ChangeCustomDetectionRuleStatus" and RawEventData.IsEnabled == "false", "Detection Rule Disabled",
+    ActionType == "DeleteCustomDetection", "Detection Rule Deleted",
+    ActionType == "EditCustomDetection", "Detection Rule Modified",
+    "Detection Rule Enabled")
+| project-reorder Timestamp, Action, RuleName, Query, ActorId, AccountDisplayName
