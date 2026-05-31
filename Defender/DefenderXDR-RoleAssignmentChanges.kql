@@ -1,0 +1,20 @@
+// Query to detect changes made to Defender RBAC Custom Role Assignments
+// Useful to monitor when users are added to or removed from assignments on Roles
+// Utilizes IdentityInfo to lookup Object Id and return user information such as UPN and Displayname
+
+CloudAppEvents
+| where Timestamp > ago (7d)
+| where ActionType == "UpdateAssignment"
+| extend ActorUpn = parse_json(RawEventData.UserId)
+| extend Action = iff(RawEventData.AddedRoleAssignment != "[]",
+    "Added to Role Assignment",
+    "Removed from Role Assignment")
+| extend AccountObjectId = iff(RawEventData.AddedRoleAssignment != "[]"
+    parse_json(RawEventData.AddedRoleAssignment),
+    parse_json(RawEventData.DeletedRoleAssignment))
+| extend RoleDefinitionId = tostring(parse_json(RawEventData.RoleDefinitionId))
+| mv-expand AccountObjectId
+| extend AccountObjectId = tostring(AccountObjectId)
+| lookup IdentitityInfo on AccountObjectId
+| summarize arg_max(Timestamp, *) by RoleDefinitionId, Action, AccountUpn
+| project Timestamp, Action, ActorUpn, RoleDefinitionId, TargetUpn = AccountUpn, TargetDisplayName = AccountDisplayName1
