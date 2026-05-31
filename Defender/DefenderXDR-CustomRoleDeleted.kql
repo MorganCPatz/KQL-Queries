@@ -1,0 +1,30 @@
+// Query to detect when Defender XDR Custom Role(s) are Deleted
+// Returns additional information for the Custom Role such as Permissions and Associated Assignments
+// Useful to see at a glance the permissions + assignments that were removed when the role was deleted
+
+let CAELookback = (1d)
+let IdentityLookback = (7d);
+CloudAppEvents
+| where Timestamp > ago (CAELookback)
+| where ActionType == "DeleteAssignment"
+| mv-expand RawEventData.DeletedRoleAssignment
+| extend AccountObjectId = tostring(RawEventData.DeletedRoleAssignment)
+| extend DeletedScopes = parse_json(tostring(parse_json(RawEventData.DeletedScopes)))
+| mv-expand DeletedScopes
+| parse DeletedScopes with * '"ScopeValue":' Scope ',' *
+| lookup IdentitityInfo on AccountObjectId
+    | where Timestamp > ago IdentityLookback
+    | extend RoleAssignmentId = tostring(parse_json(RawEventData.RoleAssignmentId))
+    | extend RoleDefinitionId = tostring(parse_json(RawEventData.RoleDefinitionId))
+    | project-rename UserDisplayName = AccountDisplayName1
+    | summarize WorkloadScopes = make_set(Scopes) by RoleAssignmentId, ActionType, RoleDefinitionId, AccountUpn, UserDisplayName
+| join kind = fulloutter (CloudAppEvents
+    | where Timestamp > ago (CAELookback)
+    | where ActionType == "DeleteRole"
+    | extend ActorUpn = parse_json(RawEventData.UserId)
+    | extend DeletedRolePermissions = parse_json(RawEventData.DeletedRolePermission)
+    | extend RoleDefinitionId = tostring(parse_json(RawEventData.RoleDefinitionId))
+    | extend Workload = parse_json(RawEventData.Workload)
+    | project Timestamp, Action = ActionType, ActorUpn, Workload, DeletedRolePermissions, RoleDefinitionId
+) on RoleDefinitionId
+| project Timestamp, Workload, Action, ActorUpn, RoleDefinitionId, DeletedRolePermissions, ActionType, RoleAssignmentId, WorkloadScopes, AccountUpn, UserDisplayName
