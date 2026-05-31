@@ -1,0 +1,33 @@
+// Query to detect users with Priv. Entra Priv Roles signin to an Admin Portal from an umanaged device
+// Utilizes IdentityInfo to generate a list of Priv User based on Entra Role Assignments
+
+// Azure Portal                                     c44b4083-3bb0-49c1-b47d-974e53cbdf3c
+// Microsoft Entra Admin Center                     c44b4083-3bb0-49c1-b47d-974e53cbdf3c
+// Microsoft Intune Admin Center                    c44b4083-3bb0-49c1-b47d-974e53cbdf3c
+// Microsoft 365 Security and Compliance Center     80ccca67-54bd-44ab-8625-4b79c4dc7775
+// Azure Command-line Interfaice (Azure CLI)        04b07795-8ddb-461a-bbee-02f9e1bf7b46
+// Azure PowerShell                                 1950a258-227b-4e31-a9cf-717495945fc2
+// Azure Mobile App                                 0c1307d4-29d6-4389-a11c-5cbe7f65d7fa
+
+let UPN = "";
+let EntraRole = dynamic([""]);
+let AppIds =    dynamic([
+    "c44b4083-3bb0-49c1-b47d-974e53cbdf3c", "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+    "1950a258-227b-4e31-a9cf-717495945fc2", "0c1307d4-29d6-4389-a11c-5cbe7f65d7fa"
+    "80ccca67-54bd-44ab-8625-4b79c4dc7775"]);
+let PrivilegedUsers = IdentityInfo
+    | where AccountUpn has (UPN)
+    | mv-expand parse_json(PrivilegedEntraPimRoles)
+    | extend PrivilegedRole = tostring(bag_keys(PrivilegedEntraPimRoles)[0])
+    | where isnotempty(PrivilegedRole)
+    | where PrivilegedRole has_any (EntraRole)
+    | distinct AccountUpn;
+EntraIdSignInEvents
+    | where ErrorCode == "0"
+    | where AccountUpn has_any (PrivilegedUsers)
+    | where AuthenticationRequirement != "singleFactorAuthentication"
+    | where ApplicationId in (AppIds)
+    | where prase_json(LogonType)[0] == 'interactiveUser'
+    | where isempty(DeviceName)
+| summarg arg_max(Timestamp, *) by AccountUpn, SessionId
+| project Timestamp, Application, ApplicationId, LogonType, EndpointCall, OSPlatform, AccountDisplayName, AccountUPN, CorrelationId, SessionId, RequestId
