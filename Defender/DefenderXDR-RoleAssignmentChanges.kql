@@ -9,12 +9,12 @@ CloudAppEvents
 | extend Action = iff(RawEventData.AddedRoleAssignment != "[]",
     "Added to Role Assignment",
     "Removed from Role Assignment")
-| extend AccountObjectId = iff(RawEventData.AddedRoleAssignment != "[]"
+| extend AccountObjectId = iff(RawEventData.AddedRoleAssignment != "[]",
     parse_json(RawEventData.AddedRoleAssignment),
     parse_json(RawEventData.DeletedRoleAssignment))
 | extend RoleDefinitionId = tostring(parse_json(RawEventData.RoleDefinitionId))
 | mv-expand AccountObjectId
 | extend AccountObjectId = tostring(AccountObjectId)
-| lookup IdentitityInfo on AccountObjectId
+| lookup IdentityInfo on AccountObjectId
 | summarize arg_max(Timestamp, *) by RoleDefinitionId, Action, AccountUpn
 | project Timestamp, Action, ActorUpn, RoleDefinitionId, TargetUpn = AccountUpn, TargetDisplayName = AccountDisplayName1
