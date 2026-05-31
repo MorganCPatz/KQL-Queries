@@ -27,7 +27,7 @@ EntraIdSignInEvents
     | where AccountUpn has_any (PrivilegedUsers)
     | where AuthenticationRequirement != "singleFactorAuthentication"
     | where ApplicationId in (AppIds)
-    | where prase_json(LogonType)[0] == 'interactiveUser'
+    | where parse_json(LogonType)[0] == 'interactiveUser'
     | where isempty(DeviceName)
-| summarg arg_max(Timestamp, *) by AccountUpn, SessionId
-| project Timestamp, Application, ApplicationId, LogonType, EndpointCall, OSPlatform, AccountDisplayName, AccountUPN, CorrelationId, SessionId, RequestId
+| summarize arg_max(Timestamp, *) by AccountUpn, SessionId
+| project Timestamp, Application, ApplicationId, LogonType, EndpointCall, OSPlatform, AccountDisplayName, AccountUpn, CorrelationId, SessionId, RequestId
