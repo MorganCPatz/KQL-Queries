@@ -6,5 +6,7 @@ CloudAppEvents
 | where (tolower(AccountId) matches regex @"(compliance|security|help|desk|support|assistance|admin|troubleshoot|onmicrosoft.com|^tech|$tech|tech\s)")
 | extend UserAccountUpn = parse_json(RawEventData.Attendees[0].UPN)
 | extend UserDisplayName = parse_json(RawEventData.Attendees[0].DisplayName)
+| extend JoinTime = todatetime(RawEventData.JoinTime)
+| extend LeaveTime = todatetime(RawEventData.LeaveTime)
 | where UserAccountUpn != AccountId
-| project-reorder Timestamp, UserDisplayName, UserAccountUpn, Application, ActionType, AccountId, AccountDisplayName
+| project-reorder Timestamp, UserDisplayName, UserAccountUpn, Application, ActionType, JoinTime, LeaveTime, AccountId, AccountDisplayName
