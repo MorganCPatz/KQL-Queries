@@ -8,5 +8,5 @@ CloudAppEvents
 | extend UserDisplayName = parse_json(RawEventData.Attendees[0].DisplayName)
 | extend JoinTime = todatetime(RawEventData.JoinTime)
 | extend LeaveTime = todatetime(RawEventData.LeaveTime)
-| where UserAccountUpn != AccountId
+| where tolower(UserAccountUpn) != AccountId
 | project-reorder Timestamp, UserDisplayName, UserAccountUpn, Application, ActionType, JoinTime, LeaveTime, AccountId, AccountDisplayName
