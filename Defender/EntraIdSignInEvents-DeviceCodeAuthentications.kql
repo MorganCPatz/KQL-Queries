@@ -12,4 +12,4 @@ EntraIdSignInEvents
 | where parse_json(ConditionalAccessPolicies_includeRulesSatisfied)["ruleSatisfied"] == 'deviceCodeFlow'
 | extend CAPolicy = parse_json(ConditionalAccessPolicies.displayName)
 | extend Result = parse_json(ConditionalAccessPolicies.result)
-| project-reorder Timestamp, Application, ResourceDisplayName,  EndpointCall, AccountDisplayName, AccountUpn, CAPolicy, Result, OSPlatform, isManaged, isCompliant 
+| project-reorder Timestamp, Application, ResourceDisplayName,  EndpointCall, AccountDisplayName, AccountUpn, CAPolicy, Result, OSPlatform, IsManaged, IsCompliant 
