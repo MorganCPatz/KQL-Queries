@@ -1,0 +1,15 @@
+// Query to Identify Device Code Authentications that would be blocked by Conditional Access
+// Requires a CA Policy to be configured in Report-Only mode to identify Device Code Auth
+// Device Code Traffic is identified via Endpoint Call + configured CA Policy configuration
+
+EntraIdSignInEvents
+| where Timestamp > ago (7d)
+| where EndpointCall has_any ("Cmsi:Cmsi", "Federation:oauth2claimsprovider")
+| where LogonType == '["interactiveUser"]'
+| where ErrorCode == "0"
+| mv-expand todynamic(ConditionalAccessPolicies)
+| mv-expand (ConditionalAccessPolicies.includeRulesSatisfied)
+| where parse_json(ConditionalAccessPolicies_includeRulesSatisfied)["ruleSatisfied"] == 'deviceCodeFlow'
+| extend CAPolicy = parse_json(ConditionalAccessPolicies.displayName)
+| extend Result = parse_json(ConditionalAccessPolicies.result)
+| project-reorder Timestamp, Application, ResourceDisplayName,  EndpointCall, AccountDisplayName, AccountUpn, CAPolicy, Result, OSPlatform, isManaged, isCompliant 
