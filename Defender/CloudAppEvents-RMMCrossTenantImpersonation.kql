@@ -9,19 +9,19 @@ let TargetUpn = DeviceNetworkEvents
 | where ActionType == "ConnectionSuccess"
 | where isnotempty(InitiatingProcessAccountUpn)
 | where RemoteUrl has_any (RmmURLs)
-| project-rename UserAccountUpn = InitiatingProcessAccountVupn, RmmTimestamp = Timestamp
+| project-rename UserAccountUpn = InitiatingProcessAccountUpn, RmmTimestamp = Timestamp
 | project UserAccountUpn, RmmTimestamp;
 TargetUpn
 | join kind=innerunique (CloudAppEvents
 | where Timestamp > ago (Lookback)
 | where ActionType == "CallParticipantDetail"
 | where (tolower(AccountId) matches regex @"(compliance|security|help|desk|support|assistance|admin|troubleshoot|onmicrosoft.com|^tech|$tech|tech\s)")
-| extend UserAccountUpn = parse_json(RawEventData.Attendees[0].UPN)
+| extend UserAccountUpn = tostring(parse_json(RawEventData.Attendees[0].UPN))
 | extend UserDisplayName = parse_json(RawEventData.Attendees[0].DisplayName)
 | extend JoinTime = todatetime(RawEventData.JoinTime)
 | extend LeaveTime = todatetime(RawEventData.LeaveTime)
 | where UserAccountUpn != AccountId
-) on UserAccountUpn\
+) on UserAccountUpn
 | where RmmTimestamp between (JoinTime .. LeaveTime)
 | project-rename ExternalId = AccountId, ExternalDisplayName = AccountDisplayName
 | project Timestamp, Application, ActionType, RmmTimestamp, JoinTime, LeaveTime, UserDisplayName, UserAccountUpn, ExternalId, ExternalDisplayName
