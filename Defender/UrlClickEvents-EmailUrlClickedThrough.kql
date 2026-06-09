@@ -1,0 +1,10 @@
+// Simple query to discover URL clicks from emails that were blocked but clicked through
+// Returns basic details of the event such as Click Time, URL, and Email Sender/Subject/Recipient information 
+
+ UrlClickEvents
+ | where ActionType == "ClickBlocked"
+ | where IsClickedThrough == "1"
+ | project-rename ClickTimestamp = Timestamp
+ | join EmailEvents on NetworkMessageId
+ | project-rename TimeDelivered = Timestamp
+ | project ClickTimestamp, TimeDelivered, ActionType, IsClickedThrough, ThreatTypes, RecipientEmailAddress, SenderFromAddress, Subject, NetworkMessageId, Url
