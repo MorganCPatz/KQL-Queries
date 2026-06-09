@@ -8,9 +8,9 @@ EmailEvents
 | where Timestamp > ago (7d)
 | where Subject has (EmailSubject)
 | where NetworkMessageId has (MessageId)
-| where SenderFromAddress has (SenderAddress) or SenderFromEmailAddress has (SenderAddress)
+| where SenderFromAddress has (SenderAddress) or SenderMailFromAddress has (SenderAddress)
 | join (UrlClickEvents
 | where ActionType == "ClickAllowed" or IsClickedThrough == "1"
-) NetworkMessageId
+) on NetworkMessageId
 | project-rename TimeDelivered = Timestamp, ClickedTimestamp = Timestamp1
 | project ClickedTimestamp, TimeDelivered, ActionType, IsClickedThrough, ThreatTypes, SenderFromAddress, RecipientEmailAddress, Subject, NetworkMessageId, Url 
