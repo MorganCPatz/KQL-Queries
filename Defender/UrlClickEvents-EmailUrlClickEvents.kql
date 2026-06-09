@@ -1,0 +1,16 @@
+// Query to check if a URL was clicked / clicked through on a recieved email
+// Returns basic details of URLs clicked such as Time, URL, and Email Sender/Subject/Recipient information
+
+let EmailSubject = "";
+let MessageId = "";
+let SenderAddress = "";
+EmailEvents
+| where Timestamp > ago (7d)
+| where Subject has (EmailSubject)
+| where NetworkMessageId has (MessageId)
+| where SenderFromAddress has (SenderAddress) or SenderFromEmailAddress has (SenderAddress)
+| join (UrlClickEvents
+| where ActionType == "ClickAllowed" or IsClickedThrough == "1"
+) NetworkMessageId
+| project-rename TimeDelivered = Timestamp, ClickedTimestamp = Timestamp1
+| project ClickedTimestamp, TimeDelivered, ActionType, IsClickedThrough, ThreatTypes, SenderFromAddress, RecipientEmailAddress, Subject, NetworkMessageId, Url 
