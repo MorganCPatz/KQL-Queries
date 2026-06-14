@@ -3,9 +3,8 @@
 
 let ADGroups = dynamic(["Administrators", "Domain Admins", "Enterprise Admins", "Schema Admins", "Account Operators", "Backup Operators", "Group Policy Creator Owners", "Server Operators"]);
 ExposureGraphEdges
-| where Timestamp > ago (7d)
 | where EdgeLabel == "member of"
 | where TargetNodeName in (ADGroups)
-| summarize OnPremGroups == make_set(TargetNodeName) by SourceNodeName
+| summarize OnPremGroups = make_set(TargetNodeName) by SourceNodeName
 | join EntraIdSignInEvents on $left.SourceNodeName == $right.AccountDisplayName
 | project Timestamp, AccountDisplayName, AccountUpn, OnPremGroups, Application, LogonType, ErrorCode, IPAddress
