@@ -1,0 +1,11 @@
+// Query to display details regarding number of signins per CA Named Location
+// Can be useful to identify activity level per Named Location / defined IP address and unique number of users
+
+EntraIdSignInEvents
+| where NetworkLocationDetails != "[]"
+| extend NamedLocation = parse_json(NetworkLocationDetails)
+| mv-expand NamedLocation
+| extend Type = tostring(NamedLocation.networkType)
+| extend NetworkName = tostring(NamedLocation.networkNames[0])
+| summarize DistinctUsers = dcount(AccountUpn), SignInCount = count() by IPAddress, NetworkName, Type
+| project NetworkName, Type, IPAddress, SignInCount, DistinctUsers
