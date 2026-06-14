@@ -1,0 +1,13 @@
+// Query to return a list of Conditional Access Policy Failures 
+// Can be useful to quickly identify which policies were triggered during a failed signin
+
+let ResolvedErrorCodes = externaldata(Error: int, Description: string)['https://raw.githubusercontent.com/MorganCPatz/KQL-Queries/refs/heads/main/AADSigninErrorCodes.json'] with (format='multijson');
+EntraIdSignInEvents
+| where AccountUpn == "";
+| where LogonType == '["interactiveUser"]'
+| lookup ResolvedErrorCodes on $left.ErrorCode == $right.Error
+| extend Policies = parse_json(ConditionalAccessPolicies)
+| mv-expand Policies
+| where Policies.result == "failure"
+| extend CAP = Policies.displayName
+| project-reorder Timestamp, AccountDisplayName, AccountUpn, Application, LogonType, CAP, ErrorCode, Description
