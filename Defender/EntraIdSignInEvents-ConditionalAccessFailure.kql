@@ -3,7 +3,7 @@
 
 let ResolvedErrorCodes = externaldata(Error: int, Description: string)['https://raw.githubusercontent.com/MorganCPatz/KQL-Queries/refs/heads/main/AADSigninErrorCodes.json'] with (format='multijson');
 EntraIdSignInEvents
-| where AccountUpn == ""
+| where AccountUpn has ""
 | where LogonType == '["interactiveUser"]'
 | lookup ResolvedErrorCodes on $left.ErrorCode == $right.Error
 | extend Policies = parse_json(ConditionalAccessPolicies)
