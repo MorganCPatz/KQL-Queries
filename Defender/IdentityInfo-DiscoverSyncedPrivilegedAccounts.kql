@@ -1,0 +1,16 @@
+// Useful to quickly identify Privileged Accounts that have been synced to Entra
+// Utilizes Sensitive Tag for initial identification and then checks against specifc AD Groups
+// Query will also return any Assigned Roles or Privileged PIM Assignments for the account
+
+let ADGroups = dynamic(["Administrators", "Domain Admins", "Enterprise Admins", "Schema Admins", "Account Operators", "Backup Operators", "Group Policy Creator Owners", "Server Operators"]);
+IdentityInfo
+| where Timestamp > ago (7d)
+| where SourceProvider == "Hybrid"
+| where IsAccountEnabled == "1" and Tags has "Sensitive"
+| distinct AccountUpn, AccountDisplayName, CriticalityLevel, tostring(AssignedRoles), tostring(PrivilegedEntraPimRoles)
+| join (ExposureGraphEdges
+    | where EdgeLabel == "member of"
+    | where TargetNodeName in (ADGroups)
+) on $left.AccountDisplayName == $right.SourceNodeName
+    | summarize OnPremGroups = make_set(TargetNodeName) by AccountDisplayName, AccountUpn, CriticalityLevel, AssignedRoles, PrivilegedEntraPimRoles
+    | project-reorder AccountDisplayName, AccountUpn, CriticalityLevel, OnPremGroups, AssignedRoles, PrivilegedEntraPimRoles
