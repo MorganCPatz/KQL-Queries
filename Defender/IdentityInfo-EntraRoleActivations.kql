@@ -27,8 +27,8 @@ union
     | where AccountDisplayName == "MS-PIM"
     | extend AccountUpn = tostring(parse_json(RawEventData).ObjectId)
 ) on AccountUpn
-    | extend RoleActivated = iff(Role == ObjectName, "Activated", "0"
-    | summarize Count = count() by RoleActivated, Role, DisplayName, AccountUpn)
+    | extend RoleActivated = iff(Role == ObjectName, "Activated", "0")
+    | summarize Count = count() by RoleActivated, Role, DisplayName, AccountUpn
     | extend ActivationCount = iff(RoleActivated == "Activated", Count = toint(Count), Count = toint("0"))
 | summarize arg_max(ActivationCount, *) by Role, AccountUpn
 | project DisplayName, AccountUpn, Role, ActivationCount
