@@ -1,0 +1,35 @@
+// Query to display the number PIM activations for Assigned Entra Roles
+// Checks for both "Assigned" and "PrivilegedEntraPimRoles" values from IdentityInfo table
+// Does not distinguish Eligible from Active Assignments; Zero may indicate an Active (Permanent) Assignment
+
+let UPN = dynamic([""]);
+union
+(IdentityInfo
+| where Timestamp > ago (7d)
+| where AccountUpn in (UPN)
+| mv-expand parse_json(AssignedRoles)
+| where isnotempty(AssignedRoles)
+| project-rename DisplayName = AccountDisplayName
+| distinct tostring(AssignedRoles), AccountUpn, DisplayName),
+(IdentityInfo
+| where Timestamp > ago (7d)
+    | where AccountUpn in (UPN)
+    | extend PrivilegedRole = (bag_keys(PrivilegedEntraPimRoles)[0])
+    | where isnotempty(PrivilegedRole)
+    | project-rename DisplayName1 = AccountDisplayName
+    | distinct tostring(PrivilegedRole), AccountUpn, DisplayName1)
+    | extend Role = coalesce(AssignedRoles, PrivilegedRole)
+    | extend DisplayName = coalesce(DisplayName, DisplayName1)
+    | distinct Role, AccountUpn, DisplayName
+| join kind = inner (CloudAppEvents
+    | where Timestamp > ago (14d)
+    | where ActionType == ("Add member to role.")
+    | where AccountDisplayName == "MS-PIM"
+    | extend AccountUpn = tostring(parse_json(RawEventData).ObjectId)
+) on AccountUpn
+    | extend RoleActivated = iff(Role == ObjectName, "Activated", "0"
+    | summarize Count = count() by RoleActivated, Role, DisplayName, AccountUpn)
+    | extend ActivationCount = iff(RoleActivated == "Activated", Count = toint(Count), Count = toint("0"))
+| summarize arg_max(ActivationCount, *) by Role, AccountUpn
+| project DisplayName, AccountUpn, Role, ActivationCount
+| sort by DisplayName asc, Role asc
