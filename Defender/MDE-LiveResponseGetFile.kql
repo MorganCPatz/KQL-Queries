@@ -23,9 +23,8 @@ CloudAppEvents
 
 CloudAppEvents
 | where ActionType == "RunLiveResponseSession"
-| extend EventData = parse_json(RawEventData)
-| where isnotempty(EventData.FileSHA256)
-| where tolower(EventData.CommandsString) starts with "get "
-| parse tolower(EventData.CommandsString) with "get" FilePath
-| extend Actor = EventData.UserId, DeviceName = EventData.DeviceName, FileHash = EventData.FileHash, FileName = EventData.FileName
+| where isnotempty(RawEventData.FileSHA256)
+| where tolower(RawEventData.CommandsString) starts with "get "
+| parse tolower(RawEventData.CommandsString) with "get" FilePath
+| extend Actor = RawEventData.UserId, DeviceName = RawEventData.DeviceName, FileHash = RawEventData.FileHash, FileName = RawEventData.FileName
 | project-reorder Timestamp, ActionType, DeviceName, FileName, FileHash, Actor, AccountDisplayName
