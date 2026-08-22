@@ -3,7 +3,7 @@
 
 AuditLogs
 | where TimeGenerated > ago (7d)
-| where OperationName in~("Add eligible member to role in PIM completed (permanent)", "Add member to role in PIM completed (permanent)")
+| where OperationName in~("Add eligible member to role in PIM completed (permanent)", "Add member to role in PIM completed (permanent)", "Add member to role in PIM completed (timebound)")
 | where TargetResources[3].type has_any("Group", "User")
 | where TargetResources[0].displayName != "Member"
 | extend ChangedBy = InitiatedBy.user.userPrincipalName
