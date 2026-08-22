@@ -4,10 +4,11 @@
 AuditLogs
 | where TimeGenerated > ago (7d)
 | where OperationName in~("Add eligible member to role in PIM completed (permanent)", "Add member to role in PIM completed (permanent)")
-| where TargetResources[2].type == "Group" or TargetResources[2].type == "User"
+| where TargetResources[3].type has_any("Group", "User")
 | where TargetResources[0].displayName != "Member"
-| extend ObjectAdded = TargetResources[2].displayName
 | extend ChangedBy = InitiatedBy.user.userPrincipalName
-| extend ['Azure AD Role'] = TargetResources[0].displayName
+| extend EntraRole = TargetResources[0].displayName
+| extend ObjectAdded = TargetResources[3].displayName
+| extend AccountUPN = TargetResources[3].userPrincipalName
 | parse AdditionalDetails with * 'Justification","value":"' Justification '"' *
-| project TimeGenerated,OperationName, ['Azure AD Role'], ObjectAdded, Justification, ChangedBy
+| project TimeGenerated, OperationName, EntraRole, ObjectAdded, AccountUPN, Justification, ChangedBy
