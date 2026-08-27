@@ -20,3 +20,4 @@ Activation
 ) on AccountUpn
 | where TimeGenerated between (RoleStartTime .. RoleExpirationTime)
 | project RoleStartTime, RoleExpirationTime, ActivationLenghtMins, Identity, AccountUpn, TimeGenerated, OperationName, TargetResources, AdditionalDetails
+| sort by RoleStartTime, Identity, TimeGenerated desc
