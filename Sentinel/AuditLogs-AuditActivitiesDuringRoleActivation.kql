@@ -3,8 +3,8 @@
 // Can be further filtered to look at specific users by including Identity (Display Name) info
 
 let Lookback = 3d;
-let Activation = Auditlogs
-    | where TimeGenerated > ago (Loopback)
+let Activation = AuditLogs
+    | where TimeGenerated > ago (Lookback)
     | where OperationName == "Add member to role completed (PIM activation)"
     | where TargetResources[0].displayName == "Global Administrator"
     | where Identity contains ""
@@ -14,7 +14,7 @@ let Activation = Auditlogs
     | extend AccountUpn = tostring(parse_json(InitiatedBy.user).userPrincipalName)
     | project Identity, RoleStartTime, RoleExpirationTime, ActivationLenghtMins, AccountUpn;
 Activation
-    | join kind=inner (Auditlogs
+    | join kind=inner (AuditLogs
     | where TimeGenerated > ago (Lookback)
     | extend AccountUpn = tostring(parse_json(InitiatedBy.user).userPrincipalName)
 ) on AccountUpn
