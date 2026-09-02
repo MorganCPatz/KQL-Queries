@@ -4,6 +4,27 @@
 AuditLogs
 | where TimeGenerated > ago (7d)
 | where OperationName == "Add member to role outside of PIM (permanent)"
+| mv-expand TGTResources = TargetResources
+| where TGTResources.type has_any ("Group", "User")
+| extend Actor = (InitiatedBy.user).userPrincipalName
+| extend AssignedTo = coalesce(TGTResources.displayName, TGTResources.userPrincipalName)
+| extend ObjectType = TGTResources.type
+| extend RoleAssigned = TargetResources[0].displayName
+| project-reorder TimeGenerated, OperationName, RoleAssigned, AssignedTo, ObjectType, Actor
+
+
+
+
+
+
+
+
+
+// OLD QUERY - See above for improved query; may contain incorrect or outdated references
+
+AuditLogs
+| where TimeGenerated > ago (7d)
+| where OperationName == "Add member to role outside of PIM (permanent)"
 | extend Actor = (InitiatedBy.user).userPrincipalName
 | extend RoleAssigned = TargetResources[0].displayName
 | extend AssignedTo = iif((TargetResources[2].type == "Group"),
