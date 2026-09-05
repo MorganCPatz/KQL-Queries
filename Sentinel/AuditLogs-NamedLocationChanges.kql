@@ -1,0 +1,37 @@
+// Query to show IP Address Changes and Current Trust Status to a Named Location
+// Displays Current and Previous IPs and values that were added/removed
+
+AuditLogs
+| where TimeGenerated > ago (90d)
+| where OperationName contains "Update named location"
+| mv-expand TargetResources
+| mv-expand TargetResources.modifiedProperties
+| where TargetResources.modifiedProperties contains "ipRanges"
+  | extend CurrentIPs = parse_json(tostring(parse_json(TargetResources_modifiedProperties.newValue))).ipRanges
+  | extend PreviousIPs = parse_json(tostring(parse_json(TargetResources_modifiedProperties.oldValue))).ipRanges
+  | extend Added = set_difference(CurrentIPs, PreviousIPs)
+  | extend Removed = set_difference(PreviousIPs, CurrentIPs)
+  | extend ChangedBy = parse_json(InitiatedBy.user.userPrincipalName)
+  | extend LocationTrusted = parse_json(tostring(parse_json(TargetResources_modifiedProperties.newValue))).isTrusted
+  | extend NamedLocation = TargetResources.displayName
+| parse Added with * '"cidrAddress":' AddedIP '}' *
+| parse Removed with * '"cidrAddress":' RemovedIP '}' *
+| project TimeGenerated, OperationName, NamedLocation, CurrentIPs, PreviousIPs, AddedIP, RemovedIP, LocationTrusted, ChangedBy
+
+
+// Query to show Country and Region changes to a Named Location
+// Displays Current and Previous Countries and values that were added/removed
+
+AuditLogs
+| where TimeGenerated > ago (90d)
+| where OperationName == "Update named location"
+| mv-expand TargetResources
+| mv-expand TargetResources.modifiedProperties
+| where TargetResources.modifiedProperties contains "countriesAndRegions"
+  | extend NewValueCountries = parse_json(tostring(parse_json(TargetResources_modifiedProperties.newValue))).countriesAndRegions
+  | extend OldValueCountries = parse_json(tostring(parse_json(TargetResources_modifiedProperties.oldValue))).countriesAndRegions
+  | extend AddedCountry = set_difference(NewValueCountries, OldValueCountries)
+  | extend RemovedCountry = set_difference(OldValueCountries, NewValueCountries)
+  | extend ChangedBy = parse_json(InitiatedBy.user.userPrincipalName)
+  | extend NamedLocation = TargetResources.displayName
+| project TimeGenerated, OperationName, NamedLocation, NewValueCountries, OldValueCountries, AddedCountry, RemovedCountry, ChangedBy
