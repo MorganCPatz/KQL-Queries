@@ -1,0 +1,29 @@
+// Query to identify when a Server Principal is granted Graph Permissions and identifies the Tier of permission added 
+// PathType and ShortestPath columns are only populated for Tier 0 permissions as these have direct/indirect paths to GA or Full Tenant Access
+// See Azure-Tiering (https://github.com/emiliensocchi/azure-tiering/tree/main) for full information 
+
+let GraphAppPermissions = externaldata(tier: int, id: string, assetName: string, assetDefinition: string, pathType: string, shortestPath: string)
+["https://raw.githubusercontent.com/emiliensocchi/azure-tiering/refs/heads/main/Microsoft%20Graph%20application%20permissions/tiered-msgraph-app-permissions.json"] 
+with(format='multijson', ingestionMapping=```[
+      {"Column": "tier", "Properties": {"Path": "$.tier"}},
+      {"Column": "id", "Properties": {"Path": "$.id"}},
+      {"Column": "assetName", "Properties": {"Path": "$.assetName"}},
+      {"Column": "assetDefinition", "Properties": {"Path": "$.assetDefinition"}},
+      {"Column": "pathType", "Properties": {"Path": "$.pathType"}},
+      {"Column": "shortestPath", "Properties": {"Path": "$.shortestPath"}}]```)
+| project-rename PermissionID = id, GraphPermission = assetName, Defintion = assetDefinition, Tier = tier;
+AuditLogs
+| where TimeGenerated > ago (90d)
+| where OperationName == "Add app role assignment to service principal"
+| where Result =~ "success"
+| mv-expand TargetResources
+| where TargetResources.displayName == "Microsoft Graph"
+| mv-expand TargetResources.modifiedProperties
+| where TargetResources_modifiedProperties.displayName == "AppRole.Id"
+| where isnull(TargetResources_modifiedProperties.oldValue)
+| extend NewGraphPermission = trim('"', tostring(TargetResources_modifiedProperties.newValue))
+| join kind=inner GraphAppPermissions on $left.NewGraphPermission == $right.PermissionID
+  | extend ServicePrincipalDisplayName = parse_json(tostring(parse_json(tostring(TargetResources.modifiedProperties))[6].newValue))
+  | extend ServicePrincipalObjectId = parse_json(tostring(parse_json(tostring(TargetResources.modifiedProperties))[5].newValue))
+  | extend ChangedBy = coalesce((InitiatedBy.user.userPrincipalName), (InitiatedBy.app.displayName)) 
+| project-reorder TimeGenerated, ServicePrincipalDisplayName, ServicePrincipalObjectId, OperationName, NewGraphPermission, Tier, GraphPermission, Defintion, pathType, shortestPath, ChangedBy
