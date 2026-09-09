@@ -1,0 +1,20 @@
+// Query to identify Admin Consent Grants to Enterprise Applications and the associated Scopes
+// Admin Consent is identified as "AllPrincipals"in the ConsentAction.Permissions property
+// Useful to quickly identify scope changes to Enterprise Apps  
+
+AuditLogs
+| where TimeGenerated > ago (30d)
+| where OperationName =~ "Consent to application"
+| where Result =~ "success"
+| mv-expand TGTResources = TargetResources[0].modifiedProperties
+| where TGTResources.displayName == "ConsentAction.Permissions"
+| where TGTResources.newValue has "AllPrincipals"
+  | extend Actor = tostring(coalesce(parse_json(tostring(InitiatedBy.user)).userPrincipalName, parse_json(tostring(InitiatedBy.app)).displayName))
+  | extend ActorIp = tostring(coalesce(parse_json(tostring(InitiatedBy.user)).ipAddress, parse_json(tostring(InitiatedBy.app)).ipAddress)) 
+  | extend ApplicationName =  tostring(TargetResources[0].displayName)
+  | extend AppId = tostring(TargetResources[0].id)
+  | extend NewValueScopes = extract(@'Scope:\s*([^,\]]*)', 1, tostring(TGTResources.newValue))
+  | extend Scopes = split(NewValueScopes, " ")
+| mv-expand Scopes
+| summarize GrantedScopes = make_set(Scopes), ScopeCount = count() by ApplicationName, AppId, Actor, ActorIp, CorrelationId, OperationName, TimeGenerated
+| project TimeGenerated, ApplicationName, AppId, OperationName, CorrelationId, Actor, ActorIp, GrantedScopes, ScopeCount
