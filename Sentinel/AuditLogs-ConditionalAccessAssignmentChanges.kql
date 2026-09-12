@@ -1,0 +1,51 @@
+// Query to display changes to Group or User Assignments for a Conditional Access Policy
+// This only targets Included/Excluded Users and Groups and does not include Role assignment
+// Output displays Object IDs, manual lookup to identify Group or User is required
+// Note: "Activity" only displays first matched condition (Added/Removed) however both changes may exist 
+
+AuditLogs
+| where TimeGenerated > ago (7d)
+| where OperationName == "Update conditional access policy"
+| where ResultDescription != "Restored soft deleted conditional access policy"
+| where Result =~ "success"
+| mv-expand TGTResources = TargetResources[0].modifiedProperties
+| extend PolicyName = TargetResources[0].displayName
+| extend TYPE = TargetResources[0].type
+| where TGTResources has_any ("excludeGroups", "includeGroups")
+// Identify current Groups + Users assigned to policy... 
+| extend newValueExcludeGroups = parse_json(tostring(parse_json(tostring(parse_json(tostring(TGTResources.newValue)).conditions)).users)).excludeGroups
+| extend newValueIncludeGroups = parse_json(tostring(parse_json(tostring(parse_json(tostring(TGTResources.newValue)).conditions)).users)).includeGroups
+| extend newValueExcludeUsers = parse_json(tostring(parse_json(tostring(parse_json(tostring(TGTResources.newValue)).conditions)).users)).excludeUsers
+| extend newValueIncludeUsers = parse_json(tostring(parse_json(tostring(parse_json(tostring(TGTResources.newValue)).conditions)).users)).includeUsers
+// Identify previous Groups + Users assigned to policy...
+| extend oldValueExcludeGroups = parse_json(tostring(parse_json(tostring(parse_json(tostring(TGTResources.oldValue)).conditions)).users)).excludeGroups
+| extend oldValueIncludeGroups = parse_json(tostring(parse_json(tostring(parse_json(tostring(TGTResources.oldValue)).conditions)).users)).includeGroups
+| extend oldValueExcludeUsers = parse_json(tostring(parse_json(tostring(parse_json(tostring(TGTResources.oldValue)).conditions)).users)).excludeUsers
+| extend oldValueIncludeUsers = parse_json(tostring(parse_json(tostring(parse_json(tostring(TGTResources.oldValue)).conditions)).users)).includeUsers
+// Identify Groups + Users that were added to policy...
+| extend AddedExcludeGroups = set_difference(newValueExcludeGroups, oldValueExcludeGroups)
+| extend AddedIncludeGroups = set_difference(newValueIncludeGroups, oldValueIncludeGroups)
+| extend AddedExcludeUsers = set_difference(newValueExcludeUsers, oldValueExcludeUsers)
+| extend AddedIncludeUsers = set_difference(newValueIncludeUsers, oldValueIncludeUsers)
+// Identify Groups + Users that were removed from policy...
+| extend RemovedExcludeGroups = set_difference(oldValueExcludeGroups, newValueExcludeGroups)
+| extend RemovedIncludeGroups = set_difference(oldValueIncludeGroups, newValueIncludeGroups)
+| extend RemovedExcludeUsers = set_difference(oldValueExcludeUsers, newValueExcludeUsers)
+| extend RemovedIncludeUsers = set_difference(oldValueIncludeUsers, newValueIncludeUsers)
+// Create Filter to Identify Changes...
+| extend AssignmentChanged = case(AddedExcludeGroups != "[]", "1",
+  AddedIncludeGroups != "[]", "1", 
+  RemovedExcludeGroups != "[]", "1",
+  RemovedIncludeGroups != "[]", "1",
+  AddedExcludeUsers != "[]", "1",
+  AddedIncludeUsers != "[]", "1",
+  RemovedExcludeUsers != "[]", "1",
+  RemovedIncludeUsers != "[]", "1",
+  "0")
+// Filter out events that did not include User/Group Assignment Changes
+| where AssignmentChanged != "0"
+| extend Actor = coalesce((InitiatedBy.user).userPrincipalName, (InitiatedBy.app).displayName)
+| extend Activity = case(AddedIncludeGroups !="[]" or AddedIncludeUsers !="[]" or AddedExcludeGroups !="[]" or AddedExcludeUsers !="[]", "Group(s) or User(s) Added (Include/Exclude) to Policy Assignment" ,
+  RemovedExcludeGroups != "[]" or RemovedExcludeUsers !="[]" or RemovedIncludeGroups !="[]" or RemovedIncludeUsers !="[]", "Group(s) or User(s) Removed from Policy Assignment",
+  "N/A")
+| project TimeGenerated, PolicyName, Activity, Actor, AddedExcludeGroups, AddedIncludeGroups, RemovedExcludeGroups, RemovedIncludeGroups, AddedExcludeUsers, AddedIncludeUsers, RemovedExcludeUsers, RemovedIncludeUsers
