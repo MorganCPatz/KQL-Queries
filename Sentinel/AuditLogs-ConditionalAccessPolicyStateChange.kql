@@ -1,0 +1,14 @@
+// Query to identify Status changes to Conditional Access Policies
+// Detects when policies are set to Enabled/Disable/ReportOnly or Deleted
+
+AuditLogs
+| where TimeGenerated > ago (7d)
+| where OperationName has_any ("Update conditional access policy", "Delete conditional access policy")
+| mv-expand TGTResources = TargetResources[0].modifiedProperties
+| extend CurrentState = tostring(parse_json(tostring(TGTResources.newValue)).state)
+| extend PreviousState = tostring(parse_json(tostring(TGTResources.oldValue)).state) 
+| where CurrentState != PreviousState
+| extend Actor = coalesce((InitiatedBy.user).userPrincipalName, (InitiatedBy.app).displayName)
+| extend PolicyName = TargetResources[0].displayName
+| extend PolicyStatus = iff(isnotempty(CurrentState), strcat("Policy ",CurrentState), ResultDescription)
+| project TimeGenerated, PolicyName, OperationName, Actor, PreviousState, PolicyStatus
