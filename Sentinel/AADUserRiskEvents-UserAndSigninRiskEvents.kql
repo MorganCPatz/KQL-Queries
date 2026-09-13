@@ -8,17 +8,17 @@ AADUserRiskEvents
 | where RiskDetail has_any ("none") 
 | where RiskLevel has_any ("medium", "high") // Only display medium and high user risk events
 | extend UserRiskEventLevel = RiskLevel, 
-         UserRiskEventState = RiskState,
-         UserRiskEvent = RiskEventType,
-         UserRiskDetectedTime = DetectedDateTime
+  UserRiskEventState = RiskState,
+  UserRiskEvent = RiskEventType,
+  UserRiskDetectedTime = DetectedDateTime
 | project UserRiskEventLevel, UserRiskEvent, UserRiskEventState, UserRiskDetectedTime, RequestId
 | join  kind=inner SigninLogs on $left.RequestId == $right.OriginalRequestId
 | where ResultType == "0" // Display Succesful logins only...
 | where RiskDetail has_any("none")
 | extend SigninRiskState = RiskState,
-         SigninRiskLevelAggregated = RiskLevelAggregated,
-         SigninRiskType_v2 = RiskEventTypes_V2,
-         SigninTime = CreatedDateTime
+  SigninRiskLevelAggregated = RiskLevelAggregated,
+  SigninRiskType_v2 = RiskEventTypes_V2,
+  SigninTime = CreatedDateTime
 | summarize arg_min(SigninTime, *)  by CorrelationId
 | project SigninTime, UserDisplayName, UserPrincipalName, AppDisplayName, CorrelationId, IPAddress,
           UserRiskDetectedTime, UserRiskEvent, UserRiskEventLevel, UserRiskEventState, 
