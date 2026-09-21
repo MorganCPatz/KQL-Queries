@@ -57,11 +57,11 @@ TargetUpn
 | where RmmTimestamp between (JoinTime .. LeaveTime)
 | project Timestamp, Application, ActionType, DeviceName, JoinTime, LeaveTime, UserDisplayName, UserAccountUpn, AccountId, AccountDisplayName, RmmTimestamp, RmmFileName
 
-
+### Alternative DeviceNetworkEvents Query 
 // Alternative query that may return FPs as it matches User RMM Activity and External Teams Call Activity
 // RMM Activity taken place before or after (outside of External Calls Team) may not be related activity
 // Verify activity to see if events are related
-
+```
 let Lookback = 7d;
 let RmmURLs = externaldata(URI: string)['https://raw.githubusercontent.com/jschell/RemoteManagementMonitoringTools/refs/heads/main/Network%20Indicators/RMM_SummaryNetworkURI.csv'];
 let TargetUpn = DeviceNetworkEvents
@@ -82,4 +82,4 @@ CloudAppEvents
 | where UserAccountUpn != AccountId
 | project-rename ExternalId = AccountId, ExternalDisplayName = AccountDisplayName
 | project Timestamp, Application, ActionType, JoinTime, LeaveTime, UserDisplayName, UserAccountUpn, ExternalId, ExternalDisplayName
-
+```
