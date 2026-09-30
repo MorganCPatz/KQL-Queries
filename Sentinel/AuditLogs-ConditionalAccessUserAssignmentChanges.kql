@@ -10,15 +10,15 @@ AuditLogs
 | extend newValue = parse_json(tostring(TGTResources.newValue))
 | extend oldValue = parse_json(tostring(TGTResources.oldValue))
 // Identify Current + Previous Users assigned to policy...
-| extend nvExcludeUsers = newValue.conditions.users.excludeUsers
-| extend nvIncludeUsers = newValue.conditions.users.includeUsers
-| extend ovExcludeUsers = oldValue.conditions.users.excludeUsers
-| extend ovIncludeUsers = oldValue.conditions.users.includeUsers
+| extend nvExcludeUsers = newValue.conditions.users.excludeUsers,
+    nvIncludeUsers = newValue.conditions.users.includeUsers,
+    ovExcludeUsers = oldValue.conditions.users.excludeUsers,
+    ovIncludeUsers = oldValue.conditions.users.includeUsers
 // Identify Users Added/Removed from policy...
-| extend AddedExcludeUsers = set_difference(nvExcludeUsers, ovExcludeUsers)
-| extend AddedIncludeUsers = set_difference(nvIncludeUsers, ovIncludeUsers)
-| extend RemovedExcludeUsers = set_difference(ovExcludeUsers, nvExcludeUsers)
-| extend RemovedIncludeUsers = set_difference(ovIncludeUsers, nvIncludeUsers)
+| extend AddedExcludeUsers = set_difference(nvExcludeUsers, ovExcludeUsers),
+    AddedIncludeUsers = set_difference(nvIncludeUsers, ovIncludeUsers),
+    RemovedExcludeUsers = set_difference(ovExcludeUsers, nvExcludeUsers),
+    RemovedIncludeUsers = set_difference(ovIncludeUsers, nvIncludeUsers)
 // Create filter to Identify Assignment Changes...
 | extend AssignmentChanges = case(AddedExcludeUsers has_any (AccountIds), "Added as Excluded User",
     AddedIncludeUsers has_any (AccountIds), "Added as Included User",
